@@ -1,0 +1,11 @@
+<resources>
+    <string name="id_test_app_open_admob">ca-app-pub-3940256099942544/9257395921</string>
+    <string name="id_test_banner_admob">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="id_test_native_admob">ca-app-pub-3940256099942544/2247696110</string>
+    <string name="id_test_collapsible_banner_admob">ca-app-pub-3940256099942544/2014213617</string>
+    <string name="id_test_native_admob_fullscrren" translatable="false">ca-app-pub-3940256099942544/7342230711</string>
+    <string name="id_test_interstitial_admob">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="id_test_reward_admob">ca-app-pub-3940256099942544/5224354917</string>
+    <string name="id_test_reward_inter_admob">ca-app-pub-3940256099942544/5354046379</string>
+    <string name="LOADING">Loading...</string>
+</resources>
