@@ -68,7 +68,7 @@ class MyApplication: Application() {
     override fun onCreate() {
         super.onCreate()
         AdmobManager.initAdmob(this, timeOut = 10000, isEnableAds = true)
-        AppResumeAdsManager.getInstance().init(this, appOnresmeAdsId})
+        AppResumeAdsManager.getInstance().init(this, appOnresmeAdsId)
     }
 }
 ```
