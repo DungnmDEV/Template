@@ -17,8 +17,8 @@ dependencyResolutionManagement {
 
 Step 2: Add the dependency
 ```bash
-          implementation 'com.google.android.gms:play-services-ads:{version}'
-	        implementation 'com.github.dungvnhh98:AdmobLib:1.0.3'
+          implementation 'com.google.android.gms:play-services-ads:23.0.0'  //May vary depending on version
+	  implementation 'com.github.dungvnhh98:AdmobLib:1.0.3'  //May vary depending on version
 ```
 
 
@@ -54,7 +54,7 @@ class MyApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AdmobManager.initAdmob(this, timeOut = 10000, isAdsTest = true, isEnableAds = true) \\change isAdsTest = false when you use live Ads ID
+        AdmobManager.initAdmob(this, timeOut = 10000, isEnableAds = true) \\change isAdsTest = false when you use live Ads ID
     }
 }
 ```
@@ -68,7 +68,7 @@ class MyApplication: Application() {
 class MyApplication: Application() {
     override fun onCreate() {
         super.onCreate()
-        AdmobManager.initAdmob(this, timeOut = 10000, isAdsTest = true, isEnableAds = true)
+        AdmobManager.initAdmob(this, timeOut = 10000, isEnableAds = true)
         AppResumeAdsManager.getInstance().init(this, appOnresmeAdsId})
     }
 }
@@ -465,6 +465,7 @@ fun showRewardInterAd(activity: Activity, rewardInterAdHolder: RewardInterAdHold
 ## Step 1: Add Adjust to your project
  
  Visit the following link and download the latest version of the 2 files ARR and JAR: https://github.com/adjust/android_sdk/releases
+ Visit the following link and download version 3.12.0 of the ARR file: https://github.com/adjust/adjust_signature_sdk/releases
  <br>
  In the directory {your_project_name}/app, create a libs directory and add the 2 downloaded files to this directory
 <br>
@@ -481,7 +482,8 @@ android {
 
 dependencies {
 	...
-	implementation files('libs/adjust-lib.aar')
+	implementation(files("libs/adjust-android-signature-3.12.0.aar"))
+  	implementation(files("libs/adjust-android-4.35.0.aar")) //May vary depending on version
 }
 ```
  Add to the app's proguard-rules.pro file:
@@ -558,7 +560,7 @@ You need a remote_config_defaults.xml file to store keys and default values, you
 ```
 
 ```kotlin
-fun initRemoteConfig(key: String, onCompleteListener: OnCompleteListener<Boolean>) {
+fun initRemoteConfigString(onFinish: (config: FirebaseRemoteConfig) -> Unit) {
         val mFirebaseRemoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
         val configSettings: FirebaseRemoteConfigSettings = FirebaseRemoteConfigSettings.Builder()
             .setMinimumFetchIntervalInSeconds(3600)
@@ -567,22 +569,17 @@ fun initRemoteConfig(key: String, onCompleteListener: OnCompleteListener<Boolean
         mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings)
         mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
 
-        mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val value = mFirebaseRemoteConfig.getBoolean(key)
-                onCompleteListener.onComplete(task, value)
-            } else {
-                val defaultValue = mFirebaseRemoteConfig.getBoolean(key, R.xml.remote_config_defaults)
-                onCompleteListener.onComplete(task, defaultValue)
-            }
+        mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener { _ ->
+            onFinish.invoke(mFirebaseRemoteConfig)
         }
     }
-
+```
+```kotlin
 //Use in your activity:
 
-initRemoteConfig(key, OnCompleteListener<Boolean> { task, value ->
-            Log,d(TAG, value)
-        })
+initRemoteConfig{ 
+            Log,d(TAG, it.getString(your_key))
+        }
 ```
 ## Step 3: Message Service
 Create MessageService class:
@@ -677,7 +674,7 @@ Add in your AndroidManifest.xml:
 \\ Add animation when change layout
 	ViewGroup.actionAnimation()
 
-\\ For example:
+\\ For example animation:
 	viewContainer.actionAnimation() // viewContainer is the view containing the textview
 	textView.gone()
 ```
