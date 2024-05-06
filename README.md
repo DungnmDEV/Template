@@ -18,7 +18,7 @@ dependencyResolutionManagement {
 Step 2: Add the dependency
 ```bash
           implementation 'com.google.android.gms:play-services-ads:{version}'
-	        implementation 'com.github.dungvnhh98:AdmobLib:{version}'
+	        implementation 'com.github.dungvnhh98:AdmobLib:(https://jitpack.io/#DungnmPercas/Template)'
 ```
 
 
