@@ -4,7 +4,7 @@
 
 <p align="left"> <a href="https://developer.android.com" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/android/android-original-wordmark.svg" alt="android" width="40" height="40"/> </a> <a href="https://www.java.com" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" alt="java" width="40" height="40"/> </a> <a href="https://kotlinlang.org" target="_blank" rel="noreferrer"> <img src="https://www.vectorlogo.zone/logos/kotlinlang/kotlinlang-icon.svg" alt="kotlin" width="40" height="40"/> </a> </p>
 
-Step1: Add it in your root build.gradle at the end of repositories:
+### Step1: Add it in your root build.gradle at the end of repositories:
 ```bash
 dependencyResolutionManagement {
 		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -15,14 +15,14 @@ dependencyResolutionManagement {
 	}
 ```
 
-Step 2: Add the dependency
+### Step 2: Add the dependency
 ```bash
           implementation 'com.google.android.gms:play-services-ads:23.0.0'  //May vary depending on version
 	  implementation 'com.github.DungnmPercas:Template:1.0.3'  //May vary depending on version
 ```
 
 
-Step 3: Add to AndroidManifest.xml
+### Step 3: Add to AndroidManifest.xml
 ```bash
 <!--    ID Ads Test:    ca-app-pub-3940256099942544~3347511713-->
 
@@ -31,7 +31,7 @@ Step 3: Add to AndroidManifest.xml
             android:value="{YourAdsID}" />
 ```
 
-Step 4: Create MyApplication extend Application
+### Step 4: Create MyApplication extend Application
 ```kotlin
 class MyApplication: Application() {
 
@@ -41,14 +41,14 @@ class MyApplication: Application() {
     }
 }
 ```
-Step 5: Use MyApplication in AndroidManifest.xml
+### Step 5: Use MyApplication in AndroidManifest.xml
 ```bash
 <application
         android:name=".MyApplication"
 	........
 </application>
 ```
-Step 6: Init Admob 
+### Step 6: Init Admob 
 ```kotlin
 class MyApplication: Application() {
 
@@ -60,9 +60,9 @@ class MyApplication: Application() {
 ```
 
 
-## Now you can use Admob Library
+### Now you can use Admob Library
 
-- AppResumeAdsManager:
+## AppResumeAdsManager:
 ```kotlin
 class MyApplication: Application() {
     override fun onCreate() {
@@ -72,7 +72,7 @@ class MyApplication: Application() {
     }
 }
 ```
-- AppOpenAdsManager:
+## AppOpenAdsManager:
 ```kotlin
 val appOpenAdsManager = AppOpenAdsManager(this,appOpenID,
             timeOut = 10000, object : AppOpenAdsManager.AppOpenAdListener {
@@ -91,7 +91,7 @@ val appOpenAdsManager = AppOpenAdsManager(this,appOpenID,
         appOpenAdsManager.loadAndShowAoA()
 ```
 
-- Banner Ads:
+## Banner Ads:
 ```kotlin
 //Load and show Banner Ad normal
     fun loadAndShowBanner(
@@ -162,7 +162,7 @@ val appOpenAdsManager = AppOpenAdsManager(this,appOpenID,
     }
 
 ```
-- Native Ad:
+## Native Ad:
 ```kotlin
 // Load Native Ads before show it or use Load and Show Native Ads Function
 // Use NativeAdHolder to hold Native ads id
@@ -318,7 +318,7 @@ fun loadNativeAdFullScreen(context: Context, nativeAdHolder: NativeAdHolder, med
         })
     }
 ```
-- Interstitial Ad:
+## Interstitial Ad:
 ```kotlin
 //Load interstitial ad
     fun loadInterstitialAd(context: Context, interAdHolder: InterAdHolder){
@@ -390,7 +390,7 @@ fun loadNativeAdFullScreen(context: Context, nativeAdHolder: NativeAdHolder, med
     }
 
 ```
-- Reward Ad:
+## Reward Ad:
 ```kotlin
 //Load and show Reward Ad
    fun loadAndShowRewardAd(activity: Activity, idRewardAd: String){
