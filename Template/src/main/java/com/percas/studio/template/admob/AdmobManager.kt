@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "LocalVariableName")
 
 package com.percas.studio.template.admob
 
@@ -61,7 +61,6 @@ import com.percas.studio.template.R
 @SuppressLint("InflateParams")
 object AdmobManager {
 
-    var isTestAdmob = true
     var isEnableAd = false
     var isOverlayAdShowing = false
 
@@ -76,7 +75,7 @@ object AdmobManager {
     private var dialogFullScreen: Dialog? = null
 
     @JvmStatic
-    fun initAdmob(context: Context?, timeOut: Int, isTestAd: Boolean, isEnableAd: Boolean) {
+    fun initAdmob(context: Context?, timeOut: Int, isEnableAd: Boolean) {
 
         if (timeOut < 5000 && timeOut != 0) {
             Toast.makeText(context, "Limit time ~10000", Toast.LENGTH_LONG).show()
@@ -86,7 +85,6 @@ object AdmobManager {
         } else {
             10000
         }
-        isTestAdmob = isTestAd
         AdmobManager.isEnableAd = isEnableAd
 
         MobileAds.initialize(context!!) {}
@@ -156,10 +154,8 @@ object AdmobManager {
 
         mAdView.setAdSize(getAdSize(activity, viewBannerAd.width.toFloat()))
 
-        mAdView.adUnitId = if (isTestAdmob) {
+        mAdView.adUnitId = idBannerAd.ifBlank {
             activity.getString(R.string.id_test_banner_admob)
-        } else {
-            idBannerAd
         }
 
         viewBannerAd.removeAllViews()
@@ -235,10 +231,8 @@ object AdmobManager {
             return
         }
         val adView = AdView(activity)
-        adView.adUnitId = if (isTestAdmob) {
+        adView.adUnitId = idBannerCollapAd.ifBlank {
             activity.getString(R.string.id_test_collapsible_banner_admob)
-        } else {
-            idBannerCollapAd
         }
         val adSize = getAdSize(activity, viewBanner.width.toFloat())
         adView.setAdSize(adSize)
@@ -325,7 +319,7 @@ object AdmobManager {
             return
         }
 
-        if (isTestAdmob) {
+        if (nativeHolder.ads.isBlank()) {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob)
         }
         nativeHolder.isLoading = true
@@ -490,7 +484,7 @@ object AdmobManager {
 
         viewNativeAd.removeAllViews()
 
-        if (isTestAdmob) {
+        if (nativeHolder.ads.isBlank()) {
             nativeHolder.ads = activity.getString(R.string.id_test_native_admob)
         }
 
@@ -566,10 +560,8 @@ object AdmobManager {
             Log.d(TAG, "No internet!")
             return
         }
-        val adMobId: String = if (isTestAdmob) {
+        val adMobId: String = idNativeAd.ifBlank {
             activity.getString(R.string.id_test_native_admob_fullscrren)
-        } else {
-            idNativeAd
         }
         viewNativeAd.removeAllViews()
         val tagView =
@@ -638,7 +630,7 @@ object AdmobManager {
             return
         }
 
-        if (isTestAdmob) {
+        if (nativeHolder.ads.isBlank()) {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob_fullscrren)
         }
 
@@ -816,7 +808,7 @@ object AdmobManager {
             initAdRequest(timeOut)
         }
 
-        if (isTestAdmob) {
+        if (interHolder.ads.isBlank()) {
             interHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
 
@@ -1044,7 +1036,7 @@ object AdmobManager {
             }
             return
         }
-        if (isTestAdmob) {
+        if (interAdHolder.ads.isBlank()) {
             interAdHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
 
@@ -1228,10 +1220,8 @@ object AdmobManager {
         if (adRequest == null) {
             initAdRequest(timeOut)
         }
-        val idReward = if (isTestAdmob) {
+        val idReward = admobId.ifBlank {
             activity.getString(R.string.id_test_reward_admob)
-        } else {
-            admobId
         }
 
         dialogLoading(activity)
@@ -1346,7 +1336,7 @@ object AdmobManager {
             initAdRequest(timeOut)
         }
 
-        if (isTestAdmob) {
+        if (rewardInterAdHolder.ads.isBlank()) {
             rewardInterAdHolder.ads = context.getString(R.string.id_test_reward_inter_admob)
         }
 

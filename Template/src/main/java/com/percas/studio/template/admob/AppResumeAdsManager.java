@@ -26,13 +26,14 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.appopen.AppOpenAd;import com.percas.studio.template.admob.AdmobManager;
+import com.google.android.gms.ads.appopen.AppOpenAd;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+/** @noinspection ALL*/
 public class AppResumeAdsManager implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
     private static final String TAG = "TAG === ADS ON RESUME";
     private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
@@ -66,7 +67,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
     public void init(Application application, String appOnresmeAdsId) {
         this.mApplication = application;
         this.mAdRequest = new AdRequest.Builder().setHttpTimeoutMillis(5000).build();
-        this.adsOnResumeId = AdmobManager.INSTANCE.isTestAdmob() ? AD_UNIT_ID : appOnresmeAdsId;
+        this.adsOnResumeId = appOnresmeAdsId.trim().isEmpty() ?AD_UNIT_ID:appOnresmeAdsId.trim();
         this.mApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
         if (!isAdAvailable()) {

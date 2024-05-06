@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@Suppress("PrivatePropertyName")
 class AppOpenAdsManager(
     private val activity: Activity,
     private val appOpenID: String,
@@ -45,7 +46,7 @@ class AppOpenAdsManager(
 
     fun loadAndShowAoA() {
         var idAoa = appOpenID
-        if (AdmobManager.isTestAdmob) {
+        if (appOpenID.isBlank()) {
             idAoa = ID_TEST
         }
 
