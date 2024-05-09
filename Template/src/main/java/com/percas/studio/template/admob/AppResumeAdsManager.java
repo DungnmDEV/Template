@@ -33,7 +33,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-/** @noinspection ALL*/
+/**
+ * @noinspection ALL
+ */
 public class AppResumeAdsManager implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
     private static final String TAG = "TAG === ADS ON RESUME";
     private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
@@ -51,7 +53,9 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
     private final List<Class> disableResumeList;
     private Dialog dialogFullScreen;
     private boolean isInitialized = false;
-    public boolean isAppResumeEnabled =true;
+    public boolean isAppResumeEnabled = true;
+    private Long lastTimeShowAd = 0L;
+    public Long timeWaitToShow = 0L;
 
     public AppResumeAdsManager() {
         disableResumeList = new ArrayList<>();
@@ -67,7 +71,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
     public void init(Application application, String appOnresmeAdsId) {
         this.mApplication = application;
         this.mAdRequest = new AdRequest.Builder().setHttpTimeoutMillis(5000).build();
-        this.adsOnResumeId = appOnresmeAdsId.trim().isEmpty() ?AD_UNIT_ID:appOnresmeAdsId.trim();
+        this.adsOnResumeId = appOnresmeAdsId.trim().isEmpty() ? AD_UNIT_ID : appOnresmeAdsId.trim();
         this.mApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
         if (!isAdAvailable()) {
@@ -75,9 +79,11 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         }
         isInitialized = true;
     }
+
     public boolean isInitialized() {
         return isInitialized;
     }
+
     private void loadAd(Context context) {
         //check trạng thái trước khi load ads
         if (isLoadingAd || isAdAvailable()) {
@@ -136,6 +142,10 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         }
 //        if (AdmobManager.INSTANCE.dialog != null && AdmobManager.INSTANCE.dialog.isShowing()) AdmobManager.INSTANCE.dialog.dismiss();
 
+        if (System.currentTimeMillis() - lastTimeShowAd < timeWaitToShow) {
+            return;
+        }
+
         for (Class activity : disableResumeList) {
             if (activity.getName().equals(currentActivity.getClass().getName())) {
                 Log.d(TAG, "onStart: activity is disabled");
@@ -186,6 +196,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
                             Log.d(TAG, "onAdShowedFullScreenContent: Show");
                             isShowingAd = true;
                             appOpenAd = null;
+                            lastTimeShowAd = System.currentTimeMillis();
                         }
                     };
             showAdsResume(callback);
@@ -234,6 +245,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         Log.d(TAG, "enableAppResumeWithActivity: " + activityClass.getName());
         disableResumeList.remove(activityClass);
     }
+
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
         Log.d("===ADS", activity.getClass() + "|" + AdActivity.class);
@@ -280,11 +292,11 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-        if (activity.getClass() == AdActivity.class){
+        if (activity.getClass() == AdActivity.class) {
             return;
         }
         currentActivity = null;
-        if (dialogFullScreen != null && dialogFullScreen.isShowing()){
+        if (dialogFullScreen != null && dialogFullScreen.isShowing()) {
             dialogFullScreen.dismiss();
         }
     }

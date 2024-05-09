@@ -9,7 +9,7 @@ import android.net.Uri
 import android.view.ViewGroup
 import com.percas.studio.template.databinding.DialogRateAppBinding
 
-class RateDialog(private val activity: Activity, private val callBack: RateDialogCallback) {
+class RateApp(private val activity: Activity, private val callBack: RateDialogCallback) {
 
     private var title = ""
     private var content = ""

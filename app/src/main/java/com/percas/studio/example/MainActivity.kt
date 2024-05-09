@@ -18,7 +18,7 @@ import com.percas.studio.template.admob.AdmobManager
 import com.percas.studio.template.model.InterAdHolder
 import com.percas.studio.template.model.NativeAdHolder
 import com.percas.studio.template.model.RewardInterAdHolder
-import com.percas.studio.template.rate.RateDialog
+import com.percas.studio.template.rate.RateApp
 
 
 class MainActivity : AppCompatActivity() {
@@ -486,7 +486,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showRate(activity: Activity) {
-        val rateDialog = RateDialog(activity, object : RateDialog.RateDialogCallback {
+        val rateDialog = RateApp(activity, object : RateApp.RateDialogCallback {
             override fun onShowRateDialog() {
 
             }
