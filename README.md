@@ -631,7 +631,7 @@ Add in your AndroidManifest.xml:
 # Rate App
 ```kotlin
  fun showRate(activity: Activity){
-        val rateDialog = RateDialog(activity, object : RateDialog.RateDialogCallback{
+        val rateDialog = RateApp(activity, object : RateApp.RateDialogCallback{
             override fun onShowRateDialog() {
 
             }
