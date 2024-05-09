@@ -144,6 +144,8 @@ class AppOpenAdsManager(
 
                     override fun onAdShowedFullScreenContent() {
                         isShowingAd = true
+                        AppResumeAdsManager.getInstance().lastTimeShowAd = System.currentTimeMillis()
+
                     }
                 }
             appOpenAd?.run {

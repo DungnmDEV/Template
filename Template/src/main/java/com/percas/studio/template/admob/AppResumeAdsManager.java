@@ -54,7 +54,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
     private Dialog dialogFullScreen;
     private boolean isInitialized = false;
     public boolean isAppResumeEnabled = true;
-    private Long lastTimeShowAd = 0L;
+    public Long lastTimeShowAd = 0L;
     public Long timeWaitToShow = 0L;
 
     public AppResumeAdsManager() {
