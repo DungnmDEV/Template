@@ -74,8 +74,10 @@ object AdmobManager {
 
     private var dialogFullScreen: Dialog? = null
 
+    var isTestAd = true
+
     @JvmStatic
-    fun initAdmob(context: Context?, timeOut: Int, isEnableAd: Boolean) {
+    fun initAdmob(context: Context?, timeOut: Int, isTestAd: Boolean, isEnableAd: Boolean) {
 
         if (timeOut < 5000 && timeOut != 0) {
             Toast.makeText(context, "Limit time ~10000", Toast.LENGTH_LONG).show()
@@ -86,6 +88,8 @@ object AdmobManager {
             10000
         }
         AdmobManager.isEnableAd = isEnableAd
+
+        AdmobManager.isTestAd = isTestAd
 
         MobileAds.initialize(context!!) {}
 
@@ -154,8 +158,10 @@ object AdmobManager {
 
         mAdView.setAdSize(getAdSize(activity, viewBannerAd.width.toFloat()))
 
-        mAdView.adUnitId = idBannerAd.ifBlank {
+        mAdView.adUnitId = if (isTestAd) {
             activity.getString(R.string.id_test_banner_admob)
+        } else {
+            idBannerAd
         }
 
         viewBannerAd.removeAllViews()
@@ -231,8 +237,10 @@ object AdmobManager {
             return
         }
         val adView = AdView(activity)
-        adView.adUnitId = idBannerCollapAd.ifBlank {
+        adView.adUnitId = if (isTestAd) {
             activity.getString(R.string.id_test_collapsible_banner_admob)
+        } else {
+            idBannerCollapAd
         }
         val adSize = getAdSize(activity, viewBanner.width.toFloat())
         adView.setAdSize(adSize)
@@ -319,7 +327,7 @@ object AdmobManager {
             return
         }
 
-        if (nativeHolder.ads.isBlank()) {
+        if(isTestAd){
             nativeHolder.ads = context.getString(R.string.id_test_native_admob)
         }
         nativeHolder.isLoading = true
@@ -484,7 +492,7 @@ object AdmobManager {
 
         viewNativeAd.removeAllViews()
 
-        if (nativeHolder.ads.isBlank()) {
+        if (isTestAd) {
             nativeHolder.ads = activity.getString(R.string.id_test_native_admob)
         }
 
@@ -560,8 +568,11 @@ object AdmobManager {
             Log.d(TAG, "No internet!")
             return
         }
-        val adMobId: String = idNativeAd.ifBlank {
+
+        val adMobId: String = if(isTestAd) {
             activity.getString(R.string.id_test_native_admob_fullscrren)
+        }else{
+            idNativeAd
         }
         viewNativeAd.removeAllViews()
         val tagView =
@@ -630,7 +641,7 @@ object AdmobManager {
             return
         }
 
-        if (nativeHolder.ads.isBlank()) {
+        if (isTestAd) {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob_fullscrren)
         }
 
@@ -808,7 +819,7 @@ object AdmobManager {
             initAdRequest(timeOut)
         }
 
-        if (interHolder.ads.isBlank()) {
+        if (isTestAd) {
             interHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
 
@@ -1036,7 +1047,7 @@ object AdmobManager {
             }
             return
         }
-        if (interAdHolder.ads.isBlank()) {
+        if (isTestAd) {
             interAdHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
 
@@ -1220,8 +1231,11 @@ object AdmobManager {
         if (adRequest == null) {
             initAdRequest(timeOut)
         }
-        val idReward = admobId.ifBlank {
+
+        val idReward = if(isTestAd) {
             activity.getString(R.string.id_test_reward_admob)
+        }else{
+            admobId
         }
 
         dialogLoading(activity)
@@ -1336,7 +1350,7 @@ object AdmobManager {
             initAdRequest(timeOut)
         }
 
-        if (rewardInterAdHolder.ads.isBlank()) {
+        if (isTestAd) {
             rewardInterAdHolder.ads = context.getString(R.string.id_test_reward_inter_admob)
         }
 

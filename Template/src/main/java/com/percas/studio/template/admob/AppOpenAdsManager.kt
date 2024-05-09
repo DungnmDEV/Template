@@ -45,10 +45,12 @@ class AppOpenAdsManager(
         get() = appOpenAd != null
 
     fun loadAndShowAoA() {
-        var idAoa = appOpenID
-        if (appOpenID.isBlank()) {
-            idAoa = ID_TEST
+        var idAoa = if (AdmobManager.isTestAd) {
+             ID_TEST
+        }else{
+            appOpenID
         }
+
 
         if (!AdmobManager.isEnableAd) {
             appOpenAdsListener.onAdFail("isShowAds false")

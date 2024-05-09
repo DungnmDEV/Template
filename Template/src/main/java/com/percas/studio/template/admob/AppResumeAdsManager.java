@@ -38,7 +38,7 @@ import java.util.Objects;
  */
 public class AppResumeAdsManager implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
     private static final String TAG = "TAG === ADS ON RESUME";
-    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
+    private static final String AD_TEST_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
     @SuppressLint("StaticFieldLeak")
     private static volatile AppResumeAdsManager instance;
 
@@ -71,7 +71,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
     public void init(Application application, String appOnresmeAdsId) {
         this.mApplication = application;
         this.mAdRequest = new AdRequest.Builder().setHttpTimeoutMillis(5000).build();
-        this.adsOnResumeId = appOnresmeAdsId.trim().isEmpty() ? AD_UNIT_ID : appOnresmeAdsId.trim();
+        this.adsOnResumeId = AdmobManager.INSTANCE.isTestAd() ? AD_TEST_UNIT_ID : appOnresmeAdsId.trim();
         this.mApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
         if (!isAdAvailable()) {
