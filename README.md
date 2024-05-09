@@ -18,7 +18,7 @@ dependencyResolutionManagement {
 ### Step 2: Add the dependency
 ```bash
           implementation 'com.google.android.gms:play-services-ads:23.0.0'  //May vary depending on version
-	  implementation 'com.github.DungnmPercas:Template:1.0.5'  //May vary depending on version
+	  implementation 'com.github.DungnmPercas:Template:1.0.77'  //May vary depending on version
 ```
 
 
@@ -54,7 +54,7 @@ class MyApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AdmobManager.initAdmob(this, timeOut = 10000, isEnableAds = true)
+        AdmobManager.initAdmob(this, timeOut = 10000,isTestAd = true, isEnableAds = true)
     }
 }
 ```
@@ -69,6 +69,7 @@ class MyApplication: Application() {
         super.onCreate()
         AdmobManager.initAdmob(this, timeOut = 10000, isEnableAds = true)
         AppResumeAdsManager.getInstance().init(this, appOnresmeAdsId)
+	AppResumeAdsManager.getInstance().timeWaitToShow = 10000L
     }
 }
 ```
