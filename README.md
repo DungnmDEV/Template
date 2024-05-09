@@ -18,7 +18,7 @@ dependencyResolutionManagement {
 ### Step 2: Add the dependency
 ```bash
           implementation 'com.google.android.gms:play-services-ads:23.0.0'  //May vary depending on version
-	  implementation 'com.github.DungnmPercas:Template:1.0.3'  //May vary depending on version
+	  implementation 'com.github.DungnmPercas:Template:1.0.5'  //May vary depending on version
 ```
 
 
@@ -631,7 +631,7 @@ Add in your AndroidManifest.xml:
 # Rate App
 ```kotlin
  fun showRate(activity: Activity){
-        val rateDialog = RateDialog(activity, object : RateDialog.RateDialogCallback{
+        val rateDialog = RateApp(activity, object : RateApp.RateDialogCallback{
             override fun onShowRateDialog() {
 
             }
