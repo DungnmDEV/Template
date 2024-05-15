@@ -63,6 +63,8 @@ class RateApp(private val activity: Activity, private val callBack: RateDialogCa
             binding.btnRate.text = rate
         }
 
+        binding.ratingBar.rating = 5f
+
         binding.btnMaybeLater.setOnClickListener {
             callBack.onMaybeLaterClicked()
             dialog.dismiss()

@@ -126,11 +126,7 @@ class MainActivity : AppCompatActivity() {
             showRewardInterAd(this, Ads.interRewardHolder)
         }
         binding.btnRate.setOnClickListener {
-            binding.root.removeAllViews()
-//                dismissAllDialogs(this)
 
-//            val intent = Intent(this, MainActivity::class.java)
-            finish()
 //                .setFlags(
 //                    Intent.FLAG_ACTIVITY_NEW_TASK
 //                            or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -138,7 +134,7 @@ class MainActivity : AppCompatActivity() {
 //                            or Intent.FLAG_ACTIVITY_CLEAR_TOP
 //                )
 //            startActivity(intent)
-//            showRate(this)
+            showRate(this)
         }
         binding.btnShowbanner.setOnClickListener {
             isshow = !isshow
