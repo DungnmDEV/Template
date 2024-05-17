@@ -501,11 +501,9 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
-        rateDialog.setTitle("Rate App")
-        rateDialog.setContent("We need your review to improve the application")
-        rateDialog.setTextButtonRate("Rate")
-        rateDialog.setTextButtonMaybeLater("Maybe Later!")
         rateDialog.setPackageName(packageName)
+
+        rateDialog.setLogoApp(R.drawable.ic_setting)
 
         rateDialog.showDialog()
     }
