@@ -37,7 +37,7 @@ class SplashActivity : AppCompatActivity() {
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))
             }
 
-            override fun onAdPaid(adValue: AdValue, adUnitAds: String) {
+            override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {
             }
         })
         
