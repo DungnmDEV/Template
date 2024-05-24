@@ -178,7 +178,7 @@ class AppOpenAdsManager(
                             txt?.visibility = View.INVISIBLE
                         } catch (ignored: Exception) {
                         }
-                        setOnPaidEventListener { appOpenAdsListener.onAdPaid(it, adUnitId) }
+                        setOnPaidEventListener { appOpenAdsListener.onAdPaid(it, adUnitId, appOpenAd?.responseInfo?.mediationAdapterClassName?:"GoogleAdmob") }
                         show(activity)
                     } else {
                         appOpenAdsListener.onAdFail("AOA can't show")
@@ -205,6 +205,6 @@ class AppOpenAdsManager(
     interface AppOpenAdListener {
         fun onAdClose()
         fun onAdFail(error: String)
-        fun onAdPaid(adValue: AdValue, adUnitAds: String)
+        fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String)
     }
 }
