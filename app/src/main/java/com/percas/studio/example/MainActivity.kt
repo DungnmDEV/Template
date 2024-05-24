@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onAdClicked() {}
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {}
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
 
             })
     }
@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -249,7 +249,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -290,7 +290,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -324,7 +324,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -368,7 +368,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -390,7 +390,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onAdClosed() {
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -420,7 +420,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
 
                 }
 
@@ -449,7 +449,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Collected Reward", Toast.LENGTH_LONG).show()
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
                 }
 
             })
@@ -475,7 +475,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onAdFailed(error: String) {
                 }
 
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
                 }
 
             })

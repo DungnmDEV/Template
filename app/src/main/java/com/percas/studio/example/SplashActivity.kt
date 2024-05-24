@@ -57,9 +57,10 @@ class SplashActivity : AppCompatActivity() {
                 
             }
 
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
+            override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
+                TODO("Not yet implemented")
             }
+
 
         })
     }
@@ -78,7 +79,7 @@ class SplashActivity : AppCompatActivity() {
                 
             }
 
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
+            override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
                 
             }
 
@@ -95,7 +96,7 @@ class SplashActivity : AppCompatActivity() {
             override fun onAdClicked() {
             }
 
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
+            override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
             }
         })
     }
@@ -110,7 +111,7 @@ class SplashActivity : AppCompatActivity() {
             override fun onAdClicked() {
             }
 
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
+            override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
                 
             }
 
