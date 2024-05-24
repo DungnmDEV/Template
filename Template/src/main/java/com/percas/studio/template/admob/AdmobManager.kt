@@ -27,9 +27,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.airbnb.lottie.LottieAnimationView
-import com.percas.studio.template.model.InterAdHolder
-import com.percas.studio.template.model.NativeAdHolder
-import com.percas.studio.template.model.RewardInterAdHolder
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdError
@@ -57,6 +54,9 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback
 import com.percas.studio.template.R
+import com.percas.studio.template.model.InterAdHolder
+import com.percas.studio.template.model.NativeAdHolder
+import com.percas.studio.template.model.RewardInterAdHolder
 
 @SuppressLint("InflateParams")
 object AdmobManager {
@@ -178,9 +178,11 @@ object AdmobManager {
             override fun onAdLoaded() {
                 mAdView.onPaidEventListener =
                     OnPaidEventListener { adValue ->
+
                         adCallBack.onAdPaid(
                             adValue,
-                            mAdView.adUnitId
+                            mAdView.adUnitId,
+                            mAdView.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
                         )
                     }
                 shimmerFrameLayout?.stopShimmer()
@@ -260,7 +262,8 @@ object AdmobManager {
                     OnPaidEventListener { adValue ->
                         adCallBack.onAdPaid(
                             adValue,
-                            adView.adUnitId
+                            adView.adUnitId,
+                            adView.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
                         )
                     }
                 shimmerFrameLayout?.stopShimmer()
@@ -327,7 +330,7 @@ object AdmobManager {
             return
         }
 
-        if(isTestAd){
+        if (isTestAd) {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob)
         }
         nativeHolder.isLoading = true
@@ -340,9 +343,11 @@ object AdmobManager {
                 nativeHolder.isLoading = false
                 nativeHolder.native_mutable.value = nativeAd
                 nativeAd.setOnPaidEventListener { adValue: AdValue? ->
+
                     adValue?.let {
                         adCallBack.onAdPaid(
-                            it, nativeHolder.ads
+                            it, nativeHolder.ads,
+                            nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
                         )
                     }
                 }
@@ -440,7 +445,7 @@ object AdmobManager {
             nativeHolder.native_mutable.observe((activity as LifecycleOwner)) { nativeAd: NativeAd? ->
                 if (nativeAd != null) {
                     nativeAd.setOnPaidEventListener {
-                        adCallBack.onAdPaid(it, nativeHolder.ads)
+                        adCallBack.onAdPaid(it, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob")
                     }
                     val adView =
                         activity.layoutInflater.inflate(layoutNativeFormat, null) as NativeAdView
@@ -523,7 +528,7 @@ object AdmobManager {
                 adCallBack.onAdShowed()
                 Log.d(TAG, "Ad Showed")
                 nativeAd.setOnPaidEventListener { adValue: AdValue ->
-                    adCallBack.onAdPaid(adValue, nativeHolder.ads)
+                    adCallBack.onAdPaid(adValue, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob")
                 }
             }.withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -569,9 +574,9 @@ object AdmobManager {
             return
         }
 
-        val adMobId: String = if(isTestAd) {
+        val adMobId: String = if (isTestAd) {
             activity.getString(R.string.id_test_native_admob_fullscrren)
-        }else{
+        } else {
             idNativeAd
         }
         viewNativeAd.removeAllViews()
@@ -594,7 +599,7 @@ object AdmobManager {
         builder.withNativeAdOptions(adOptions)
         builder.forNativeAd { nativeAd ->
             nativeAd.setOnPaidEventListener { adValue: AdValue? ->
-                adValue?.let { adCallBack.onAdPaid(adValue, adMobId) }
+                adValue?.let { adCallBack.onAdPaid(adValue, adMobId, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob") }
             }
             bindNativeAdView(nativeAd, adView.findViewById(R.id.native_ad_view))
             viewNativeAd.removeAllViews()
@@ -661,7 +666,7 @@ object AdmobManager {
             nativeAd.setOnPaidEventListener { adValue: AdValue? ->
                 adValue?.let {
                     adCallBack.onAdPaid(
-                        it, nativeHolder.ads
+                        it, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
                     )
                 }
             }
@@ -759,7 +764,7 @@ object AdmobManager {
             nativeHolder.native_mutable.observe((activity as LifecycleOwner)) { nativeAd: NativeAd? ->
                 if (nativeAd != null) {
                     nativeAd.setOnPaidEventListener {
-                        adCallBack.onAdPaid(it, nativeHolder.ads)
+                        adCallBack.onAdPaid(it, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob")
                     }
                     val adView =
                         activity.layoutInflater.inflate(layoutNativeFormat, null) as NativeAdView
@@ -950,7 +955,8 @@ object AdmobManager {
                                         interstitialAd.setOnPaidEventListener { adValue ->
                                             adCallback.onAdPaid(
                                                 adValue,
-                                                interHolder.inter!!.adUnitId
+                                                interHolder.inter!!.adUnitId,
+                                                interstitialAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
                                             )
                                         }
                                     } catch (_: Exception) {
@@ -1069,7 +1075,7 @@ object AdmobManager {
                         OnPaidEventListener { adValue: AdValue? ->
                             adCallback.onAdPaid(
                                 adValue!!,
-                                interAdHolder.ads
+                                interAdHolder.ads,interstitialAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
                             )
                         }
                     interAdHolder.inter!!.fullScreenContentCallback =
@@ -1115,7 +1121,7 @@ object AdmobManager {
                         interAdHolder.inter!!.setOnPaidEventListener { adValue ->
                             adCallback.onAdPaid(
                                 adValue,
-                                interAdHolder.inter!!.adUnitId
+                                interAdHolder.inter!!.adUnitId,interAdHolder.inter!!.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
                             )
                         }
                         interAdHolder.inter!!.show(activity)
@@ -1169,7 +1175,7 @@ object AdmobManager {
                 mInterstitialAd.setOnPaidEventListener { adValue ->
                     adcallback.onAdPaid(
                         adValue,
-                        mInterstitialAd.adUnitId
+                        mInterstitialAd.adUnitId,mInterstitialAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
                     )
                 }
                 mInterstitialAd.show(activity)
@@ -1232,9 +1238,9 @@ object AdmobManager {
             initAdRequest(timeOut)
         }
 
-        val idReward = if(isTestAd) {
+        val idReward = if (isTestAd) {
             activity.getString(R.string.id_test_reward_admob)
-        }else{
+        } else {
             admobId
         }
 
@@ -1262,7 +1268,7 @@ object AdmobManager {
                     adCallback.onAdLoaded()
                     Log.d(TAG, "onAdLoaded")
                     rewardedAd.setOnPaidEventListener {
-                        adCallback.onAdPaid(it, rewardedAd.adUnitId)
+                        adCallback.onAdPaid(it, rewardedAd.adUnitId,rewardedAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob")
                     }
 
                     rewardedAd.fullScreenContentCallback =
@@ -1416,7 +1422,7 @@ object AdmobManager {
                 reward?.let {
                     rewardInterAdHolder.mutable.removeObservers((activity as LifecycleOwner))
                     it.setOnPaidEventListener { value ->
-                        adCallback.onAdPaid(value, rewardInterAdHolder.rewardInterAd!!.adUnitId)
+                        adCallback.onAdPaid(value, rewardInterAdHolder.rewardInterAd!!.adUnitId,reward.responseInfo.mediationAdapterClassName?:"GoogleAdmob")
                     }
                     rewardInterAdHolder.rewardInterAd?.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
@@ -1459,7 +1465,7 @@ object AdmobManager {
             if (rewardInterAdHolder.rewardInterAd != null) {
 
                 rewardInterAdHolder.rewardInterAd?.setOnPaidEventListener {
-                    adCallback.onAdPaid(it, rewardInterAdHolder.rewardInterAd!!.adUnitId)
+                    adCallback.onAdPaid(it, rewardInterAdHolder.rewardInterAd!!.adUnitId,rewardInterAdHolder.rewardInterAd!!.responseInfo.mediationAdapterClassName?:"GoogleAdmob")
                 }
                 rewardInterAdHolder.rewardInterAd?.fullScreenContentCallback =
                     object : FullScreenContentCallback() {
@@ -1652,14 +1658,14 @@ object AdmobManager {
         fun onAdLoaded()
         fun onAdFailed(error: String)
         fun onAdClicked()
-        fun onAdPaid(adValue: AdValue, adUnit: String)
+        fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 
     interface ShowAdCallBack {
         fun onAdShowed()
         fun onAdFailed(error: String)
         fun onAdClosed()
-        fun onAdPaid(adValue: AdValue, adUnit: String)
+        fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 
     interface LoadAndShowAdCallBack {
@@ -1668,7 +1674,7 @@ object AdmobManager {
         fun onAdFailed(error: String)
         fun onAdClosed()
         fun onAdClicked()
-        fun onAdPaid(adValue: AdValue, adUnit: String)
+        fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 
     interface ShowRewardAdCallBack {
@@ -1676,7 +1682,7 @@ object AdmobManager {
         fun onAdClosed()
         fun onAdEarned()
         fun onAdFailed(error: String)
-        fun onAdPaid(adValue: AdValue, adUnit: String)
+        fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 
     interface LoadAndShowRewardAdCallBack {
@@ -1685,6 +1691,6 @@ object AdmobManager {
         fun onAdFailed(error: String)
         fun onAdClosed()
         fun onAdEarned()
-        fun onAdPaid(adValue: AdValue, adUnit: String)
+        fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 }
