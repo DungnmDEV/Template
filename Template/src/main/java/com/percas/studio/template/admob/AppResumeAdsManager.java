@@ -77,6 +77,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         if (!isAdAvailable()) {
             loadAd(this.mApplication);
         }
+        Log.d(TAG, "init: done");
         isInitialized = true;
     }
 
@@ -128,21 +129,24 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         // Show the ad (if available) when the app moves to foreground.
         Log.d(TAG, "onresume");
         if (currentActivity == null) {
+            Log.d(TAG, "Missing activity!");
             return;
         }
         if (AdmobManager.INSTANCE.isOverlayAdShowing()) {
+            Log.d(TAG, "Other Ad is Showing!");
             return;
         }
         if (!AdmobManager.INSTANCE.isEnableAd()) {
+            Log.d(TAG, "Admob Disabled!");
             return;
         }
         if (!isAppResumeEnabled) {
-            Log.d(TAG, "isAppResumeEnabled");
+            Log.d(TAG, "App Resume Disabled!");
             return;
         }
-//        if (AdmobManager.INSTANCE.dialog != null && AdmobManager.INSTANCE.dialog.isShowing()) AdmobManager.INSTANCE.dialog.dismiss();
 
         if (System.currentTimeMillis() - lastTimeShowAd < timeWaitToShow) {
+            Log.d(TAG, "Not enough time delay!");
             return;
         }
 
