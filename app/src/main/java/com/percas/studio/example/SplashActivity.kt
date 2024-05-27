@@ -31,10 +31,12 @@ class SplashActivity : AppCompatActivity() {
             timeOut = 10000, object : AppOpenAdsManager.AppOpenAdListener {
             override fun onAdClose() {
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                finish()
             }
 
             override fun onAdFail(error: String) {
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                finish()
             }
 
             override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {

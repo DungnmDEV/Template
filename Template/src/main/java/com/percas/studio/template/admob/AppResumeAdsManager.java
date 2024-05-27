@@ -161,10 +161,10 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
 
     public void showAdIfAvailable() {
         if (!ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
-            Log.d("===Onresume", "STARTED");
+            Log.d(TAG, "STARTED");
             return;
         }
-        Log.d("===Onresume", "FullScreenContentCallback");
+        Log.d(TAG, "FullScreenContentCallback");
         if (!isShowingAd && isAdAvailable()) {
             FullScreenContentCallback callback =
                     new FullScreenContentCallback() {
@@ -299,7 +299,9 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         if (activity.getClass() == AdActivity.class) {
             return;
         }
-        currentActivity = null;
+        if(currentActivity == activity){
+            currentActivity = null;
+        }
         if (dialogFullScreen != null && dialogFullScreen.isShowing()) {
             dialogFullScreen.dismiss();
         }
