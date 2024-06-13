@@ -9,6 +9,7 @@ import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.template.admob.AdmobManager
 import com.percas.studio.template.admob.AppOpenAdsManager
+import com.percas.studio.template.cmp.CMP_Manager
 import com.percas.studio.template.model.InterAdHolder
 import com.percas.studio.template.model.NativeAdHolder
 import com.percas.studio.template.model.RewardInterAdHolder
@@ -25,6 +26,10 @@ class SplashActivity : AppCompatActivity() {
         loadInterstitialAd(this, Ads.interholder)
         loadInterRewardAd(this, Ads.interRewardHolder)
 
+        val cmpManager = CMP_Manager(this)
+        cmpManager.checkEnableShowCMP {
+
+        }
 
         val appOpenID = "ca-app-pub-3940256099942544/3419835294"
         val appOpenAdsManager = AppOpenAdsManager(this,appOpenID,

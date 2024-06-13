@@ -12,13 +12,13 @@ import android.view.Window
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.airbnb.lottie.LottieAnimationView
-import com.percas.studio.template.R
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
+import com.percas.studio.template.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -45,10 +45,14 @@ class AppOpenAdsManager(
         get() = appOpenAd != null
 
     fun loadAndShowAoA() {
-        var idAoa = if (AdmobManager.isTestAd) {
-             ID_TEST
-        }else{
+        val idAoa = if (AdmobManager.isTestAd) {
+            ID_TEST
+        } else {
             appOpenID
+        }
+        if (idAoa.isBlank()) {
+            appOpenAdsListener.onAdFail("Ad Id is blank")
+            return
         }
 
 
@@ -146,7 +150,8 @@ class AppOpenAdsManager(
 
                     override fun onAdShowedFullScreenContent() {
                         isShowingAd = true
-                        AppResumeAdsManager.getInstance().lastTimeShowAd = System.currentTimeMillis()
+                        AppResumeAdsManager.getInstance().lastTimeShowAd =
+                            System.currentTimeMillis()
 
                     }
                 }
@@ -178,7 +183,13 @@ class AppOpenAdsManager(
                             txt?.visibility = View.INVISIBLE
                         } catch (ignored: Exception) {
                         }
-                        setOnPaidEventListener { appOpenAdsListener.onAdPaid(it, adUnitId, appOpenAd?.responseInfo?.mediationAdapterClassName?:"GoogleAdmob") }
+                        setOnPaidEventListener {
+                            appOpenAdsListener.onAdPaid(
+                                it,
+                                adUnitId,
+                                appOpenAd?.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
+                            )
+                        }
                         show(activity)
                     } else {
                         appOpenAdsListener.onAdFail("AOA can't show")

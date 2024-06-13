@@ -87,7 +87,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
 
     private void loadAd(Context context) {
         //check trạng thái trước khi load ads
-        if (isLoadingAd || isAdAvailable()) {
+        if (isLoadingAd || isAdAvailable()|| adsOnResumeId.isBlank()) {
             return;
         }
         isLoadingAd = true;
@@ -147,6 +147,11 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
 
         if (System.currentTimeMillis() - lastTimeShowAd < timeWaitToShow) {
             Log.d(TAG, "Not enough time delay!");
+            return;
+        }
+
+        if (adsOnResumeId.isBlank()) {
+            Log.d(TAG, "Ad Id is blank!");
             return;
         }
 

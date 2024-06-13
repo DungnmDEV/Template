@@ -155,14 +155,20 @@ object AdmobManager {
             return
         }
         val mAdView = AdView(activity)
-
-        mAdView.setAdSize(getAdSize(activity, viewBannerAd.width.toFloat()))
-
         mAdView.adUnitId = if (isTestAd) {
             activity.getString(R.string.id_test_banner_admob)
         } else {
             idBannerAd
         }
+
+        if (mAdView.adUnitId.isBlank()) {
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
+        mAdView.setAdSize(getAdSize(activity, viewBannerAd.width.toFloat()))
+
+
 
         viewBannerAd.removeAllViews()
         val overlayView =
@@ -182,7 +188,7 @@ object AdmobManager {
                         adCallBack.onAdPaid(
                             adValue,
                             mAdView.adUnitId,
-                            mAdView.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
+                            mAdView.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                         )
                     }
                 shimmerFrameLayout?.stopShimmer()
@@ -244,6 +250,11 @@ object AdmobManager {
         } else {
             idBannerCollapAd
         }
+        if (adView.adUnitId.isBlank()) {
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
         val adSize = getAdSize(activity, viewBanner.width.toFloat())
         adView.setAdSize(adSize)
 
@@ -263,7 +274,7 @@ object AdmobManager {
                         adCallBack.onAdPaid(
                             adValue,
                             adView.adUnitId,
-                            adView.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
+                            adView.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                         )
                     }
                 shimmerFrameLayout?.stopShimmer()
@@ -333,6 +344,11 @@ object AdmobManager {
         if (isTestAd) {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob)
         }
+        if(nativeHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
         nativeHolder.isLoading = true
 
         VideoOptions.Builder().setStartMuted(false).build()
@@ -347,7 +363,7 @@ object AdmobManager {
                     adValue?.let {
                         adCallBack.onAdPaid(
                             it, nativeHolder.ads,
-                            nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
+                            nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                         )
                     }
                 }
@@ -398,6 +414,12 @@ object AdmobManager {
             return
         }
 
+        if(nativeHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         if (shimmerFrameLayout != null) {
             shimmerFrameLayout?.stopShimmer()
         }
@@ -445,7 +467,11 @@ object AdmobManager {
             nativeHolder.native_mutable.observe((activity as LifecycleOwner)) { nativeAd: NativeAd? ->
                 if (nativeAd != null) {
                     nativeAd.setOnPaidEventListener {
-                        adCallBack.onAdPaid(it, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob")
+                        adCallBack.onAdPaid(
+                            it,
+                            nativeHolder.ads,
+                            nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
+                        )
                     }
                     val adView =
                         activity.layoutInflater.inflate(layoutNativeFormat, null) as NativeAdView
@@ -501,6 +527,12 @@ object AdmobManager {
             nativeHolder.ads = activity.getString(R.string.id_test_native_admob)
         }
 
+        if(nativeHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         val tagView: View = if (isNativeMedium) {
             activity.layoutInflater.inflate(R.layout.layoutnative_loading_medium, null, false)
         } else {
@@ -528,7 +560,11 @@ object AdmobManager {
                 adCallBack.onAdShowed()
                 Log.d(TAG, "Ad Showed")
                 nativeAd.setOnPaidEventListener { adValue: AdValue ->
-                    adCallBack.onAdPaid(adValue, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob")
+                    adCallBack.onAdPaid(
+                        adValue,
+                        nativeHolder.ads,
+                        nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
+                    )
                 }
             }.withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -579,6 +615,12 @@ object AdmobManager {
         } else {
             idNativeAd
         }
+        if(adMobId.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         viewNativeAd.removeAllViews()
         val tagView =
             activity.layoutInflater.inflate(R.layout.layoutnative_loading_fullscreen, null, false)
@@ -599,7 +641,13 @@ object AdmobManager {
         builder.withNativeAdOptions(adOptions)
         builder.forNativeAd { nativeAd ->
             nativeAd.setOnPaidEventListener { adValue: AdValue? ->
-                adValue?.let { adCallBack.onAdPaid(adValue, adMobId, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob") }
+                adValue?.let {
+                    adCallBack.onAdPaid(
+                        adValue,
+                        adMobId,
+                        nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
+                    )
+                }
             }
             bindNativeAdView(nativeAd, adView.findViewById(R.id.native_ad_view))
             viewNativeAd.removeAllViews()
@@ -650,6 +698,12 @@ object AdmobManager {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob_fullscrren)
         }
 
+        if(nativeHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         nativeHolder.isLoading = true
         val videoOptions =
             VideoOptions.Builder().setStartMuted(false).setCustomControlsRequested(true).build()
@@ -666,7 +720,9 @@ object AdmobManager {
             nativeAd.setOnPaidEventListener { adValue: AdValue? ->
                 adValue?.let {
                     adCallBack.onAdPaid(
-                        it, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob"
+                        it,
+                        nativeHolder.ads,
+                        nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
             }
@@ -715,6 +771,13 @@ object AdmobManager {
             Log.e(TAG, "No Internet!")
             return
         }
+
+        if(nativeHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallBack.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         if (shimmerFrameLayout != null) {
             shimmerFrameLayout?.stopShimmer()
         }
@@ -764,7 +827,11 @@ object AdmobManager {
             nativeHolder.native_mutable.observe((activity as LifecycleOwner)) { nativeAd: NativeAd? ->
                 if (nativeAd != null) {
                     nativeAd.setOnPaidEventListener {
-                        adCallBack.onAdPaid(it, nativeHolder.ads, nativeAd.responseInfo?.mediationAdapterClassName?:"GoogleAdmob")
+                        adCallBack.onAdPaid(
+                            it,
+                            nativeHolder.ads,
+                            nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
+                        )
                     }
                     val adView =
                         activity.layoutInflater.inflate(layoutNativeFormat, null) as NativeAdView
@@ -827,7 +894,11 @@ object AdmobManager {
         if (isTestAd) {
             interHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
-
+        if(interHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adLoadCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
         InterstitialAd.load(
             activity,
             interHolder.ads,
@@ -886,7 +957,11 @@ object AdmobManager {
             Log.e(TAG, "No Internet!")
             return
         }
-
+        if(interHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
         isOverlayAdShowing = true
 
 
@@ -956,7 +1031,8 @@ object AdmobManager {
                                             adCallback.onAdPaid(
                                                 adValue,
                                                 interHolder.inter!!.adUnitId,
-                                                interstitialAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
+                                                interstitialAd.responseInfo.mediationAdapterClassName
+                                                    ?: "GoogleAdmob"
                                             )
                                         }
                                     } catch (_: Exception) {
@@ -1056,7 +1132,11 @@ object AdmobManager {
         if (isTestAd) {
             interAdHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
-
+        if(interAdHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
         isOverlayAdShowing = true
         dialogLoading(activity)
 
@@ -1075,7 +1155,9 @@ object AdmobManager {
                         OnPaidEventListener { adValue: AdValue? ->
                             adCallback.onAdPaid(
                                 adValue!!,
-                                interAdHolder.ads,interstitialAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
+                                interAdHolder.ads,
+                                interstitialAd.responseInfo.mediationAdapterClassName
+                                    ?: "GoogleAdmob"
                             )
                         }
                     interAdHolder.inter!!.fullScreenContentCallback =
@@ -1121,7 +1203,9 @@ object AdmobManager {
                         interAdHolder.inter!!.setOnPaidEventListener { adValue ->
                             adCallback.onAdPaid(
                                 adValue,
-                                interAdHolder.inter!!.adUnitId,interAdHolder.inter!!.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
+                                interAdHolder.inter!!.adUnitId,
+                                interAdHolder.inter!!.responseInfo.mediationAdapterClassName
+                                    ?: "GoogleAdmob"
                             )
                         }
                         interAdHolder.inter!!.show(activity)
@@ -1175,7 +1259,8 @@ object AdmobManager {
                 mInterstitialAd.setOnPaidEventListener { adValue ->
                     adcallback.onAdPaid(
                         adValue,
-                        mInterstitialAd.adUnitId,mInterstitialAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob"
+                        mInterstitialAd.adUnitId,
+                        mInterstitialAd.responseInfo.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
                 mInterstitialAd.show(activity)
@@ -1243,6 +1328,11 @@ object AdmobManager {
         } else {
             admobId
         }
+        if(idReward.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
 
         dialogLoading(activity)
 
@@ -1268,7 +1358,11 @@ object AdmobManager {
                     adCallback.onAdLoaded()
                     Log.d(TAG, "onAdLoaded")
                     rewardedAd.setOnPaidEventListener {
-                        adCallback.onAdPaid(it, rewardedAd.adUnitId,rewardedAd.responseInfo.mediationAdapterClassName?:"GoogleAdmob")
+                        adCallback.onAdPaid(
+                            it,
+                            rewardedAd.adUnitId,
+                            rewardedAd.responseInfo.mediationAdapterClassName ?: "GoogleAdmob"
+                        )
                     }
 
                     rewardedAd.fullScreenContentCallback =
@@ -1360,6 +1454,12 @@ object AdmobManager {
             rewardInterAdHolder.ads = context.getString(R.string.id_test_reward_inter_admob)
         }
 
+        if(rewardInterAdHolder.ads.isBlank()){
+            Log.e(TAG, "Ad Id is blank!")
+            adLoadCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         RewardedInterstitialAd.load(
             context,
             rewardInterAdHolder.ads,
@@ -1413,6 +1513,11 @@ object AdmobManager {
             return
         }
 
+        if(rewardInterAdHolder.ads.isBlank()){
+            adCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
+
         isOverlayAdShowing = true
 
         dialogLoading(activity)
@@ -1422,7 +1527,11 @@ object AdmobManager {
                 reward?.let {
                     rewardInterAdHolder.mutable.removeObservers((activity as LifecycleOwner))
                     it.setOnPaidEventListener { value ->
-                        adCallback.onAdPaid(value, rewardInterAdHolder.rewardInterAd!!.adUnitId,reward.responseInfo.mediationAdapterClassName?:"GoogleAdmob")
+                        adCallback.onAdPaid(
+                            value,
+                            rewardInterAdHolder.rewardInterAd!!.adUnitId,
+                            reward.responseInfo.mediationAdapterClassName ?: "GoogleAdmob"
+                        )
                     }
                     rewardInterAdHolder.rewardInterAd?.fullScreenContentCallback =
                         object : FullScreenContentCallback() {
@@ -1465,7 +1574,12 @@ object AdmobManager {
             if (rewardInterAdHolder.rewardInterAd != null) {
 
                 rewardInterAdHolder.rewardInterAd?.setOnPaidEventListener {
-                    adCallback.onAdPaid(it, rewardInterAdHolder.rewardInterAd!!.adUnitId,rewardInterAdHolder.rewardInterAd!!.responseInfo.mediationAdapterClassName?:"GoogleAdmob")
+                    adCallback.onAdPaid(
+                        it,
+                        rewardInterAdHolder.rewardInterAd!!.adUnitId,
+                        rewardInterAdHolder.rewardInterAd!!.responseInfo.mediationAdapterClassName
+                            ?: "GoogleAdmob"
+                    )
                 }
                 rewardInterAdHolder.rewardInterAd?.fullScreenContentCallback =
                     object : FullScreenContentCallback() {
