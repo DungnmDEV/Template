@@ -18,7 +18,7 @@ dependencyResolutionManagement {
 ### Step 2: Add the dependency
 ```bash
           implementation 'com.google.android.gms:play-services-ads:23.0.0'  //May vary depending on version
-	  implementation 'com.github.DungnmPercas:Template:1.1.2'  //May vary depending on version
+	  implementation 'com.github.DungnmPercas:Template:1.1.6'  //May vary depending on version
 ```
 
 
