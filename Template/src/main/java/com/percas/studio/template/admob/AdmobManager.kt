@@ -166,6 +166,7 @@ object AdmobManager {
             adCallBack.onAdFailed("Ad Id is blank!")
             return
         }
+
         mAdView.setAdSize(getAdSize(activity, viewBannerAd.width.toFloat()))
 
 
@@ -344,7 +345,7 @@ object AdmobManager {
         if (isTestAd) {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob)
         }
-        if(nativeHolder.ads.isBlank()){
+        if (nativeHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -414,7 +415,7 @@ object AdmobManager {
             return
         }
 
-        if(nativeHolder.ads.isBlank()){
+        if (nativeHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -527,7 +528,7 @@ object AdmobManager {
             nativeHolder.ads = activity.getString(R.string.id_test_native_admob)
         }
 
-        if(nativeHolder.ads.isBlank()){
+        if (nativeHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -615,7 +616,7 @@ object AdmobManager {
         } else {
             idNativeAd
         }
-        if(adMobId.isBlank()){
+        if (adMobId.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -698,7 +699,7 @@ object AdmobManager {
             nativeHolder.ads = context.getString(R.string.id_test_native_admob_fullscrren)
         }
 
-        if(nativeHolder.ads.isBlank()){
+        if (nativeHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -772,7 +773,7 @@ object AdmobManager {
             return
         }
 
-        if(nativeHolder.ads.isBlank()){
+        if (nativeHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -894,7 +895,7 @@ object AdmobManager {
         if (isTestAd) {
             interHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
-        if(interHolder.ads.isBlank()){
+        if (interHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adLoadCallback.onAdFailed("Ad Id is blank!")
             return
@@ -957,7 +958,7 @@ object AdmobManager {
             Log.e(TAG, "No Internet!")
             return
         }
-        if(interHolder.ads.isBlank()){
+        if (interHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallback.onAdFailed("Ad Id is blank!")
             return
@@ -1132,7 +1133,7 @@ object AdmobManager {
         if (isTestAd) {
             interAdHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
         }
-        if(interAdHolder.ads.isBlank()){
+        if (interAdHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallback.onAdFailed("Ad Id is blank!")
             return
@@ -1328,7 +1329,7 @@ object AdmobManager {
         } else {
             admobId
         }
-        if(idReward.isBlank()){
+        if (idReward.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adCallback.onAdFailed("Ad Id is blank!")
             return
@@ -1454,7 +1455,7 @@ object AdmobManager {
             rewardInterAdHolder.ads = context.getString(R.string.id_test_reward_inter_admob)
         }
 
-        if(rewardInterAdHolder.ads.isBlank()){
+        if (rewardInterAdHolder.ads.isBlank() && !isTestAd) {
             Log.e(TAG, "Ad Id is blank!")
             adLoadCallback.onAdFailed("Ad Id is blank!")
             return
@@ -1513,7 +1514,7 @@ object AdmobManager {
             return
         }
 
-        if(rewardInterAdHolder.ads.isBlank()){
+        if (rewardInterAdHolder.ads.isBlank() && !isTestAd) {
             adCallback.onAdFailed("Ad Id is blank!")
             return
         }
