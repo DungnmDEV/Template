@@ -1281,7 +1281,7 @@ object AdmobManager {
         dialogFullScreen?.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialogFullScreen?.setContentView(R.layout.dialog_full_screen)
         dialogFullScreen?.setCancelable(false)
-        dialogFullScreen?.window!!.setBackgroundDrawable(ColorDrawable(Color.WHITE))
+        dialogFullScreen?.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialogFullScreen?.window!!.setLayout(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.MATCH_PARENT

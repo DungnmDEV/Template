@@ -235,7 +235,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         dialogFullScreen.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogFullScreen.setContentView(R.layout.dialog_full_screen_onresume);
         dialogFullScreen.setCancelable(false);
-        Objects.requireNonNull(dialogFullScreen.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        Objects.requireNonNull(dialogFullScreen.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialogFullScreen.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         try {
             if (!currentActivity.isFinishing() && dialogFullScreen != null && !dialogFullScreen.isShowing()) {
