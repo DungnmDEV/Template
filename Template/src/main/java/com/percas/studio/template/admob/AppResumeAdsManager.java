@@ -20,13 +20,13 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import com.percas.studio.template.R;
 import com.google.android.gms.ads.AdActivity;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.appopen.AppOpenAd;
+import com.percas.studio.template.R;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -87,7 +87,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
 
     private void loadAd(Context context) {
         //check trạng thái trước khi load ads
-        if (isLoadingAd || isAdAvailable()|| adsOnResumeId.isBlank()) {
+        if (isLoadingAd || isAdAvailable() || adsOnResumeId.isBlank() || context == null) {
             return;
         }
         isLoadingAd = true;
@@ -304,7 +304,7 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         if (activity.getClass() == AdActivity.class) {
             return;
         }
-        if(currentActivity == activity){
+        if (currentActivity == activity) {
             currentActivity = null;
         }
         if (dialogFullScreen != null && dialogFullScreen.isShowing()) {
