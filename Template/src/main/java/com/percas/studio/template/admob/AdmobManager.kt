@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.ConnectivityManager
@@ -116,9 +117,10 @@ object AdmobManager {
 
     @JvmStatic
     fun Context.isNetworkConnected(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return cm.activeNetworkInfo != null && cm.activeNetworkInfo!!.isConnected
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        return cm?.activeNetworkInfo?.isConnected == true
     }
+
 
     private fun getAdSize(activity: Activity, adWidth: Float): AdSize {
         val display = activity.windowManager.defaultDisplay
