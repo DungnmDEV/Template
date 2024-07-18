@@ -118,8 +118,10 @@ class CMP_Manager(private val activity: Activity) {
             {
                 UserMessagingPlatform.loadConsentForm(activity, {
                     Log.d("TAG123", "checkLocaShowConsent: true")
+                    onFinish.invoke(true)
                 }, {
                     Log.d("TAG123", "checkLocaShowConsent: false")
+                    onFinish.invoke(false)
                 })
             },
             {
