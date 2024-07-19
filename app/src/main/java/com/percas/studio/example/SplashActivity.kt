@@ -26,6 +26,8 @@ class SplashActivity : AppCompatActivity() {
         loadInterstitialAd(this, Ads.interholder)
         loadInterRewardAd(this, Ads.interRewardHolder)
 
+
+
         val cmpManager = CMP_Manager(this)
         cmpManager.checkEnableShowCMP {
 

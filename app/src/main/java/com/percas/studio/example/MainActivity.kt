@@ -110,6 +110,34 @@ class MainActivity : AppCompatActivity() {
                 MediaAspectRatio.PORTRAIT
             )
         }
+        binding.btnInterNoload.setOnClickListener { 
+            AdmobManager.loadAndShowInterstitialAdWithoutLoadingScreen(this, Ads.interholder, object :AdmobManager.LoadAndShowAdCallBack{
+                override fun onAdLoaded() {
+                    
+                }
+
+                override fun onAdShowed() {
+                    
+                }
+
+                override fun onAdFailed(error: String) {
+                    
+                }
+
+                override fun onAdClosed() {
+                    
+                }
+
+                override fun onAdClicked() {
+                    
+                }
+
+                override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
+                    
+                }
+
+            })
+        }
 
         binding.btnShowinter.setOnClickListener {
             showInterstitialAd(this, Ads.interholder)

@@ -124,6 +124,12 @@
         app:layout_constraintTop_toBottomOf="@+id/btn_rate"
         android:text="hiện banner"
         android:id="@+id/btn_showbanner"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/btn_showbanner"
+        android:text="inter không loading"
+        android:id="@+id/btn_inter_noload"/>
     <View
         android:id="@+id/line"
         android:layout_width="match_parent"

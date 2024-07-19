@@ -1237,6 +1237,142 @@ object AdmobManager {
             })
     }
 
+    fun loadAndShowInterstitialAdWithoutLoadingScreen(
+        activity: Activity,
+        interAdHolder: InterAdHolder,
+        adCallback: LoadAndShowAdCallBack
+    ) {
+        val TAG = "Load and show INTERSTITIAL AD"
+        if (adRequest == null) {
+            initAdRequest(timeOut)
+        }
+        if (isOverlayAdShowing) {
+            adCallback.onAdFailed("Other ad is showing!")
+            Log.e(TAG, "Other ad is showing!")
+            return
+        }
+        if (!isEnableAd) {
+            adCallback.onAdFailed("Ads is DISABLE now!")
+            Log.e(TAG, "Ads is DISABLE now!")
+            if (AppResumeAdsManager.getInstance().isInitialized) {
+                AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+            }
+            return
+        }
+
+        if (!activity.isNetworkConnected()) {
+            adCallback.onAdFailed("No Internet!")
+            Log.e(TAG, "No Internet!")
+            if (AppResumeAdsManager.getInstance().isInitialized) {
+                AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+            }
+            return
+        }
+        if (isTestAd) {
+            interAdHolder.ads = activity.getString(R.string.id_test_interstitial_admob)
+        }
+        if (interAdHolder.ads.isBlank() && !isTestAd) {
+            Log.e(TAG, "Ad Id is blank!")
+            adCallback.onAdFailed("Ad Id is blank!")
+            return
+        }
+        isOverlayAdShowing = true
+//        dialogLoading(activity)
+
+
+        InterstitialAd.load(
+            activity,
+            interAdHolder.ads,
+            adRequest!!,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    super.onAdLoaded(interstitialAd)
+
+                    adCallback.onAdLoaded()
+                    interAdHolder.inter = interstitialAd
+                    interAdHolder.inter!!.onPaidEventListener =
+                        OnPaidEventListener { adValue: AdValue? ->
+                            adCallback.onAdPaid(
+                                adValue!!,
+                                interAdHolder.ads,
+                                interstitialAd.responseInfo.mediationAdapterClassName
+                                    ?: "GoogleAdmob"
+                            )
+                        }
+                    interAdHolder.inter!!.fullScreenContentCallback =
+                        object : FullScreenContentCallback() {
+                            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                adCallback.onAdFailed(adError.message + "\nCause\n" + adError.cause)
+                                Log.e(TAG, adError.message + "\nCause\n" + adError.cause)
+                                isOverlayAdShowing = false
+                                if (AppResumeAdsManager.getInstance().isInitialized) {
+                                    AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+                                }
+                                if (interAdHolder.inter != null) {
+                                    interAdHolder.inter = null
+                                }
+                                dismissAdDialog()
+                            }
+
+                            override fun onAdDismissedFullScreenContent() {
+                                adCallback.onAdClosed()
+                                Log.d(TAG, "onAdClosed")
+                                dismissAdDialog()
+                                if (interAdHolder.inter != null) {
+                                    interAdHolder.inter = null
+                                }
+                                isOverlayAdShowing = false
+                                if (AppResumeAdsManager.getInstance().isInitialized) {
+                                    AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+                                }
+                            }
+
+                            override fun onAdShowedFullScreenContent() {
+                                super.onAdShowedFullScreenContent()
+                                adCallback.onAdShowed()
+                                Log.d(TAG, "onAdShowed")
+                                dismissAdDialog()
+                            }
+                        }
+
+                    if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && interAdHolder.inter != null) {
+                        isOverlayAdShowing = true
+                        adCallback.onAdShowed()
+                        Log.d(TAG, "onAdShowed")
+                        interAdHolder.inter!!.setOnPaidEventListener { adValue ->
+                            adCallback.onAdPaid(
+                                adValue,
+                                interAdHolder.inter!!.adUnitId,
+                                interAdHolder.inter!!.responseInfo.mediationAdapterClassName
+                                    ?: "GoogleAdmob"
+                            )
+                        }
+                        interAdHolder.inter!!.show(activity)
+                    } else {
+                        isOverlayAdShowing = false
+                        if (AppResumeAdsManager.getInstance().isInitialized) {
+                            AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+                        }
+                        dismissAdDialog()
+                        adCallback.onAdFailed("Your App is showing on resume ad or inter ad is null!")
+                        Log.e(TAG, "Your App is showing on resume ad or inter ad is null!")
+                    }
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    super.onAdFailedToLoad(loadAdError)
+                    interAdHolder.inter = null
+                    if (AppResumeAdsManager.getInstance().isInitialized) {
+                        AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+                    }
+                    isOverlayAdShowing = false
+                    adCallback.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
+                    Log.e(TAG, loadAdError.message + "\nCause\n" + loadAdError.cause)
+                    dismissAdDialog()
+                }
+            })
+    }
+
     fun dismissAdDialog() {
         try {
             if (dialogFullScreen != null && dialogFullScreen?.isShowing == true) {
