@@ -1,6 +1,5 @@
 package com.percas.studio.template
 
-import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.View
@@ -19,6 +18,22 @@ object ViewControl {
 
     fun View.invisible() {
         visibility = View.INVISIBLE
+    }
+
+    fun View.enable() {
+        isEnabled = true
+    }
+
+    fun View.disable() {
+        isEnabled = false
+    }
+
+    fun View.isVisible():Boolean{
+        return visibility == View.VISIBLE
+    }
+
+    fun View.isGone():Boolean{
+        return visibility == View.GONE
     }
 
     fun ViewGroup.actionAnimation() {
