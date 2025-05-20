@@ -93,7 +93,6 @@ public class AppResumeAdsManager implements Application.ActivityLifecycleCallbac
         isLoadingAd = true;
         AppOpenAd.load(
                 context, adsOnResumeId, mAdRequest,
-                AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
                 new AppOpenAd.AppOpenAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull AppOpenAd ad) {

@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             binding.line.visible()
             loadAndShowBanner(this, "", binding.flBanner, binding.line)
         }
+
         binding.btnLoadandshowCollap.setOnClickListener {
             binding.flNativeMedium.gone()
             binding.flNativeSmall.gone()
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             binding.line.visible()
             loadAndShowBannerCollapsibleAd(this, "", true, binding.flBanner, binding.line)
         }
+
         binding.btnNativeMedium.setOnClickListener {
             binding.line.gone()
             binding.flBanner.gone()
@@ -176,9 +178,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    fun dismissAllDialogs(activity: Activity) {
 
-    }
     fun loadAndShowBanner(
         activity: Activity,
         idBannerAd: String,
