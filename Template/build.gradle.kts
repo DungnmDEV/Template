@@ -66,7 +66,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
 
     //google services
-    implementation ("com.google.android.gms:play-services-ads:24.3.0")
+    implementation ("com.google.android.gms:play-services-ads:24.4.0")
     //shimmer view load
     implementation("com.facebook.shimmer:shimmer:0.5.0")
 
