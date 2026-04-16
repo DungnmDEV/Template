@@ -10,9 +10,6 @@ import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.template.admob.AdmobManager
 import com.percas.studio.template.admob.AppOpenAdsManager
 import com.percas.studio.template.cmp.CMP_Manager
-import com.percas.studio.template.model.InterAdHolder
-import com.percas.studio.template.model.NativeAdHolder
-import com.percas.studio.template.model.RewardInterAdHolder
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
@@ -21,10 +18,10 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        loadNativeAd(this, Ads.nativeHolder)
-        loadNativeAdFullScreen(this, Ads.nativeHolder2, MediaAspectRatio.PORTRAIT)
-        loadInterstitialAd(this, Ads.interholder)
-        loadInterRewardAd(this, Ads.interRewardHolder)
+        loadNativeAd(this, "")
+        loadNativeAdFullScreen(this, "", MediaAspectRatio.PORTRAIT)
+        loadInterstitialAd(this, "")
+        loadInterRewardAd(this, "")
 
 
 
@@ -52,8 +49,8 @@ class SplashActivity : AppCompatActivity() {
         
         appOpenAdsManager.loadAndShowAoA()
     }
-    private fun loadNativeAd(context: Context, nativeAdHolder: NativeAdHolder){
-        AdmobManager.loadNativeAd(context, nativeAdHolder, object : AdmobManager.LoadAdCallBack{
+    private fun loadNativeAd(context: Context, idAd: String){
+        AdmobManager.loadNativeAd(context, idAd, object : AdmobManager.LoadAdCallBack{
             override fun onAdLoaded() {
                 
             }
@@ -67,15 +64,14 @@ class SplashActivity : AppCompatActivity() {
             }
 
             override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
-                TODO("Not yet implemented")
             }
 
 
         })
     }
     
-    private fun loadNativeAdFullScreen(context: Context, nativeAdHolder: NativeAdHolder, mediaAspectRatio: Int){
-        AdmobManager.loadNativeAdFullScreen(context, nativeAdHolder, mediaAspectRatio, object : AdmobManager.LoadAdCallBack{
+    private fun loadNativeAdFullScreen(context: Context, idAd: String, mediaAspectRatio: Int){
+        AdmobManager.loadNativeAdFullScreen(context, idAd, mediaAspectRatio, object : AdmobManager.LoadAdCallBack{
             override fun onAdLoaded() {
                 
             }
@@ -94,8 +90,8 @@ class SplashActivity : AppCompatActivity() {
 
         })
     }
-    private fun loadInterstitialAd(context: Context, interAdHolder: InterAdHolder){
-        AdmobManager.loadInterstitialAd(context, interAdHolder, object : AdmobManager.LoadAdCallBack{
+    private fun loadInterstitialAd(context: Context, idAd: String){
+        AdmobManager.loadInterstitialAd(context, idAd, object : AdmobManager.LoadAdCallBack{
             override fun onAdLoaded() {
             }
 
@@ -109,8 +105,8 @@ class SplashActivity : AppCompatActivity() {
             }
         })
     }
-    private fun loadInterRewardAd(context: Context, rewardInterAdHolder: RewardInterAdHolder){
-        AdmobManager.loadInterReward(context, rewardInterAdHolder, object : AdmobManager.LoadAdCallBack{
+    private fun loadInterRewardAd(context: Context, idAd: String){
+        AdmobManager.loadInterReward(context, idAd, object : AdmobManager.LoadAdCallBack{
             override fun onAdLoaded() {
             }
 

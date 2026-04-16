@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import androidx.viewbinding.ViewBinding
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
@@ -20,13 +21,21 @@ import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.percas.studio.template.R
 import com.percas.studio.template.admob.renderer.NativeAdLoadingStyle
 import com.percas.studio.template.admob.renderer.NativeAdRenderer
-import com.percas.studio.template.model.NativeAdHolder
 
 internal object NativeAdManager {
 
+    private data class NativeAdState(
+        var nativeAd: NativeAd? = null,
+        var isLoading: Boolean = false,
+        val liveData: MutableLiveData<NativeAd?> = MutableLiveData(null),
+    )
+
+    private val nativeAds = mutableMapOf<String, NativeAdState>()
+    private val fullscreenNativeAds = mutableMapOf<String, NativeAdState>()
+
     fun loadNativeAd(
         context: Context,
-        nativeHolder: NativeAdHolder,
+        idAd: String,
         adCallBack: AdmobManager.LoadAdCallBack
     ) {
         val tag = "Load NATIVE AD"
@@ -41,34 +50,38 @@ internal object NativeAdManager {
             return
         }
 
-        if (nativeHolder.nativeAd != null) {
-            adCallBack.onAdFailed("This Native ad is not empty. Don't need to load again!")
-            Log.e(tag, "This Native ad is not empty. Don't need to load again!")
-            return
-        }
-
-        if (AdmobManager.isTestAd) {
-            nativeHolder.ads = context.getString(R.string.id_test_native_admob)
-        }
-        if (nativeHolder.ads.isBlank() && !AdmobManager.isTestAd) {
+        val resolvedId = resolveNativeAdId(context, idAd, isFullscreen = false)
+        if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
         }
-        nativeHolder.isLoading = true
 
+        val state = nativeAds.getOrPut(resolvedId) { NativeAdState() }
+        if (state.nativeAd != null) {
+            adCallBack.onAdFailed("This Native ad is not empty. Don't need to load again!")
+            Log.e(tag, "This Native ad is not empty. Don't need to load again!")
+            return
+        }
+        if (state.isLoading) {
+            adCallBack.onAdFailed("Native ad is loading!")
+            Log.e(tag, "Native ad is loading!")
+            return
+        }
+
+        state.isLoading = true
         VideoOptions.Builder().setStartMuted(false).build()
 
-        val adLoader: AdLoader = AdLoader.Builder(context, nativeHolder.ads)
+        val adLoader = AdLoader.Builder(context, resolvedId)
             .forNativeAd { nativeAd ->
-                nativeHolder.nativeAd = nativeAd
-                nativeHolder.isLoading = false
-                nativeHolder.native_mutable.value = nativeAd
+                state.nativeAd = nativeAd
+                state.isLoading = false
+                state.liveData.value = nativeAd
                 nativeAd.setOnPaidEventListener { adValue: AdValue? ->
                     adValue?.let {
                         adCallBack.onAdPaid(
                             it,
-                            nativeHolder.ads,
+                            resolvedId,
                             nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                         )
                     }
@@ -78,9 +91,9 @@ internal object NativeAdManager {
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    nativeHolder.nativeAd = null
-                    nativeHolder.isLoading = false
-                    nativeHolder.native_mutable.value = null
+                    state.nativeAd = null
+                    state.isLoading = false
+                    state.liveData.value = null
                     adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
                     Log.e(tag, "onAdFailedToLoad: " + adError.message + "\nCause\n" + adError.cause)
                 }
@@ -96,6 +109,7 @@ internal object NativeAdManager {
         if (AdmobManager.adRequest != null) {
             adLoader.loadAd(AdmobManager.adRequest!!)
         } else {
+            state.isLoading = false
             adCallBack.onAdFailed("Admob is not init now. Check it before load ad!")
             Log.e(tag, "Admob is not init now. Check it before load ad!")
         }
@@ -103,7 +117,7 @@ internal object NativeAdManager {
 
     fun <T : ViewBinding> showNativeAd(
         activity: Activity,
-        nativeHolder: NativeAdHolder,
+        idAd: String,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>,
         adCallBack: AdmobManager.ShowAdCallBack
@@ -120,73 +134,37 @@ internal object NativeAdManager {
             return
         }
 
-        if (nativeHolder.ads.isBlank() && !AdmobManager.isTestAd) {
+        val resolvedId = resolveNativeAdId(activity, idAd, isFullscreen = false)
+        if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
         }
 
+        val state = nativeAds.getOrPut(resolvedId) { NativeAdState() }
         AdmobManager.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
 
-        if (!nativeHolder.isLoading) {
-            if (nativeHolder.nativeAd != null) {
-                val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
-                renderer.bind(binding, nativeHolder.nativeAd!!)
-                val adView = renderer.root(binding)
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                nativeHolder.native_mutable.removeObservers(activity as LifecycleOwner)
-                viewNativeAd.removeAllViews()
-                viewNativeAd.addView(adView)
+        if (!state.isLoading) {
+            if (state.nativeAd != null) {
+                renderNativeAd(activity, viewNativeAd, renderer, state.nativeAd!!)
+                state.liveData.removeObservers(activity as LifecycleOwner)
                 adCallBack.onAdShowed()
                 Log.d(tag, "Ad Showed")
             } else {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                nativeHolder.native_mutable.removeObservers(activity as LifecycleOwner)
+                state.liveData.removeObservers(activity as LifecycleOwner)
                 adCallBack.onAdFailed("Native is not loaded!")
                 Log.e(tag, "Native is not loaded!")
             }
             return
         }
 
-        val overlayLoading = createNativeLoadingView(activity, renderer.loadingStyle)
-        viewNativeAd.addView(overlayLoading, 0)
-
-        if (AdmobManager.shimmerFrameLayout == null) {
-            AdmobManager.shimmerFrameLayout = overlayLoading.findViewById(R.id.shimmer_view_container)
-        }
-
-        AdmobManager.shimmerFrameLayout?.startShimmer()
-        nativeHolder.native_mutable.observe(activity as LifecycleOwner) { nativeAd: NativeAd? ->
-            if (nativeAd != null) {
-                nativeAd.setOnPaidEventListener {
-                    adCallBack.onAdPaid(
-                        it,
-                        nativeHolder.ads,
-                        nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
-                    )
-                }
-                val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
-                renderer.bind(binding, nativeAd)
-                val adView = renderer.root(binding)
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                viewNativeAd.removeAllViews()
-                viewNativeAd.addView(adView)
-                adCallBack.onAdShowed()
-                Log.d(tag, "Ad Showed")
-                nativeHolder.native_mutable.removeObservers(activity)
-            } else {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd")
-                Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
-                nativeHolder.native_mutable.removeObservers(activity)
-            }
-        }
+        observeLoadingNativeAd(activity, viewNativeAd, renderer, state, tag, adCallBack)
     }
 
     fun <T : ViewBinding> loadAndShowNativeAd(
         activity: Activity,
-        nativeHolder: NativeAdHolder,
+        idAd: String,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>,
         adCallBack: AdmobManager.LoadAndShowAdCallBack
@@ -203,43 +181,33 @@ internal object NativeAdManager {
             return
         }
 
-        viewNativeAd.removeAllViews()
-
-        if (AdmobManager.isTestAd) {
-            nativeHolder.ads = activity.getString(R.string.id_test_native_admob)
-        }
-
-        if (nativeHolder.ads.isBlank() && !AdmobManager.isTestAd) {
+        val resolvedId = resolveNativeAdId(activity, idAd, isFullscreen = false)
+        if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
         }
 
+        viewNativeAd.removeAllViews()
         val tagView = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(tagView, 0)
 
         if (AdmobManager.shimmerFrameLayout == null) {
             AdmobManager.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
         }
-
         AdmobManager.shimmerFrameLayout?.startShimmer()
 
-        val adLoader = AdLoader.Builder(activity, nativeHolder.ads)
+        val adLoader = AdLoader.Builder(activity, resolvedId)
             .forNativeAd { nativeAd ->
                 adCallBack.onAdLoaded()
                 Log.d(tag, "Ad Loaded")
-                val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
-                renderer.bind(binding, nativeAd)
-                val adView = renderer.root(binding)
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                viewNativeAd.removeAllViews()
-                viewNativeAd.addView(adView)
+                renderNativeAd(activity, viewNativeAd, renderer, nativeAd)
                 adCallBack.onAdShowed()
                 Log.d(tag, "Ad Showed")
                 nativeAd.setOnPaidEventListener { adValue: AdValue ->
                     adCallBack.onAdPaid(
                         adValue,
-                        nativeHolder.ads,
+                        resolvedId,
                         nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
@@ -248,7 +216,6 @@ internal object NativeAdManager {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                     AdmobManager.shimmerFrameLayout?.stopShimmer()
                     viewNativeAd.removeAllViews()
-                    nativeHolder.isLoading = false
                     adCallBack.onAdFailed(adError.message + "\nError Code Ads:\n" + adError.cause)
                     Log.e(tag, adError.message + "\nError Code Ads:\n" + adError.cause)
                 }
@@ -290,12 +257,8 @@ internal object NativeAdManager {
             return
         }
 
-        val adMobId = if (AdmobManager.isTestAd) {
-            activity.getString(R.string.id_test_native_admob_fullscrren)
-        } else {
-            idNativeAd
-        }
-        if (adMobId.isBlank() && !AdmobManager.isTestAd) {
+        val resolvedId = resolveNativeAdId(activity, idNativeAd, isFullscreen = true)
+        if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
@@ -307,7 +270,7 @@ internal object NativeAdManager {
         AdmobManager.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
         AdmobManager.shimmerFrameLayout?.startShimmer()
 
-        val builder = AdLoader.Builder(activity, adMobId)
+        val builder = AdLoader.Builder(activity, resolvedId)
         val videoOptions =
             VideoOptions.Builder().setStartMuted(false).setCustomControlsRequested(false).build()
 
@@ -322,17 +285,12 @@ internal object NativeAdManager {
                 adValue?.let {
                     adCallBack.onAdPaid(
                         adValue,
-                        adMobId,
+                        resolvedId,
                         nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
             }
-            val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
-            renderer.bind(binding, nativeAd)
-            val adView = renderer.root(binding)
-            viewNativeAd.removeAllViews()
-            AdmobManager.shimmerFrameLayout?.stopShimmer()
-            viewNativeAd.addView(adView)
+            renderNativeAd(activity, viewNativeAd, renderer, nativeAd)
             adCallBack.onAdShowed()
             Log.d(tag, "onAdShowed")
         }
@@ -353,7 +311,7 @@ internal object NativeAdManager {
 
     fun loadNativeAdFullScreen(
         context: Context,
-        nativeHolder: NativeAdHolder,
+        idAd: String,
         mediaAspectRatio: Int,
         adCallBack: AdmobManager.LoadAdCallBack
     ) {
@@ -368,40 +326,44 @@ internal object NativeAdManager {
             Log.e(tag, "No Internet!")
             return
         }
-        if (nativeHolder.nativeAd != null) {
-            adCallBack.onAdFailed("This Native ads is not empty. Don't need to load again!")
-            Log.e(tag, "This Native ads is not empty. Don't need to load again!")
-            return
-        }
 
-        if (AdmobManager.isTestAd) {
-            nativeHolder.ads = context.getString(R.string.id_test_native_admob_fullscrren)
-        }
-
-        if (nativeHolder.ads.isBlank() && !AdmobManager.isTestAd) {
+        val resolvedId = resolveNativeAdId(context, idAd, isFullscreen = true)
+        if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
         }
 
-        nativeHolder.isLoading = true
+        val state = fullscreenNativeAds.getOrPut(resolvedId) { NativeAdState() }
+        if (state.nativeAd != null) {
+            adCallBack.onAdFailed("This Native ads is not empty. Don't need to load again!")
+            Log.e(tag, "This Native ads is not empty. Don't need to load again!")
+            return
+        }
+        if (state.isLoading) {
+            adCallBack.onAdFailed("Native ad is loading!")
+            Log.e(tag, "Native ad is loading!")
+            return
+        }
+
+        state.isLoading = true
         val videoOptions =
             VideoOptions.Builder().setStartMuted(false).setCustomControlsRequested(true).build()
         val adOptions = NativeAdOptions.Builder()
             .setMediaAspectRatio(mediaAspectRatio)
             .setVideoOptions(videoOptions)
             .build()
-        val adLoader = AdLoader.Builder(context, nativeHolder.ads)
+        val adLoader = AdLoader.Builder(context, resolvedId)
         adLoader.withNativeAdOptions(adOptions)
         adLoader.forNativeAd { nativeAd ->
-            nativeHolder.nativeAd = nativeAd
-            nativeHolder.isLoading = false
-            nativeHolder.native_mutable.value = nativeAd
+            state.nativeAd = nativeAd
+            state.isLoading = false
+            state.liveData.value = nativeAd
             nativeAd.setOnPaidEventListener { adValue: AdValue? ->
                 adValue?.let {
                     adCallBack.onAdPaid(
                         it,
-                        nativeHolder.ads,
+                        resolvedId,
                         nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
@@ -411,9 +373,9 @@ internal object NativeAdManager {
         }
         adLoader.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                nativeHolder.nativeAd = null
-                nativeHolder.isLoading = false
-                nativeHolder.native_mutable.value = null
+                state.nativeAd = null
+                state.isLoading = false
+                state.liveData.value = null
                 adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
                 Log.e(tag, adError.message + "\nCause\n" + adError.cause)
             }
@@ -426,6 +388,7 @@ internal object NativeAdManager {
         if (AdmobManager.adRequest != null) {
             adLoader.build().loadAd(AdmobManager.adRequest!!)
         } else {
+            state.isLoading = false
             adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
             Log.e(tag, "Admob is not init now. Check it before load ads!")
         }
@@ -433,7 +396,7 @@ internal object NativeAdManager {
 
     fun <T : ViewBinding> showNativeAdFullScreen(
         activity: Activity,
-        nativeHolder: NativeAdHolder,
+        idAd: String,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>,
         adCallBack: AdmobManager.ShowAdCallBack
@@ -450,68 +413,101 @@ internal object NativeAdManager {
             return
         }
 
-        if (nativeHolder.ads.isBlank() && !AdmobManager.isTestAd) {
+        val resolvedId = resolveNativeAdId(activity, idAd, isFullscreen = true)
+        if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
             adCallBack.onAdFailed("Ad Id is blank!")
             return
         }
 
+        val state = fullscreenNativeAds.getOrPut(resolvedId) { NativeAdState() }
         AdmobManager.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
 
-        if (!nativeHolder.isLoading) {
-            if (nativeHolder.nativeAd != null) {
-                val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
-                renderer.bind(binding, nativeHolder.nativeAd!!)
-                val adView = renderer.root(binding)
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                nativeHolder.native_mutable.removeObservers(activity as LifecycleOwner)
-                viewNativeAd.removeAllViews()
-                viewNativeAd.addView(adView)
+        if (!state.isLoading) {
+            if (state.nativeAd != null) {
+                renderNativeAd(activity, viewNativeAd, renderer, state.nativeAd!!)
+                state.liveData.removeObservers(activity as LifecycleOwner)
                 adCallBack.onAdShowed()
                 Log.d(tag, "onAdShowed")
             } else {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                nativeHolder.native_mutable.removeObservers(activity as LifecycleOwner)
+                state.liveData.removeObservers(activity as LifecycleOwner)
                 adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd!")
                 Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
             }
             return
         }
 
+        observeLoadingNativeAd(activity, viewNativeAd, renderer, state, tag, adCallBack)
+    }
+
+    private fun <T : ViewBinding> observeLoadingNativeAd(
+        activity: Activity,
+        viewNativeAd: ViewGroup,
+        renderer: NativeAdRenderer<T>,
+        state: NativeAdState,
+        tag: String,
+        adCallBack: AdmobManager.ShowAdCallBack
+    ) {
         val overlayLoading = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(overlayLoading, 0)
 
         if (AdmobManager.shimmerFrameLayout == null) {
             AdmobManager.shimmerFrameLayout = overlayLoading.findViewById(R.id.shimmer_view_container)
         }
-        AdmobManager.shimmerFrameLayout?.startShimmer()
 
-        nativeHolder.native_mutable.observe(activity as LifecycleOwner) { nativeAd: NativeAd? ->
+        AdmobManager.shimmerFrameLayout?.startShimmer()
+        state.liveData.observe(activity as LifecycleOwner) { nativeAd: NativeAd? ->
             if (nativeAd != null) {
                 nativeAd.setOnPaidEventListener {
                     adCallBack.onAdPaid(
                         it,
-                        nativeHolder.ads,
+                        nativeAd.responseInfo?.loadedAdapterResponseInfo?.adSourceName ?: "NativeAd",
                         nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
-                val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
-                renderer.bind(binding, nativeHolder.nativeAd!!)
-                val adView = renderer.root(binding)
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
-                viewNativeAd.removeAllViews()
-                viewNativeAd.addView(adView)
+                renderNativeAd(activity, viewNativeAd, renderer, nativeAd)
                 adCallBack.onAdShowed()
-                Log.d(tag, "onAdShowed")
-                nativeHolder.native_mutable.removeObservers(activity)
+                Log.d(tag, "Ad Showed")
+                state.liveData.removeObservers(activity as LifecycleOwner)
             } else {
                 AdmobManager.shimmerFrameLayout?.stopShimmer()
-                adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd!")
-                Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd")
-                nativeHolder.native_mutable.removeObservers(activity)
+                adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd")
+                Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
+                state.liveData.removeObservers(activity as LifecycleOwner)
             }
         }
+    }
+
+    private fun <T : ViewBinding> renderNativeAd(
+        activity: Activity,
+        viewNativeAd: ViewGroup,
+        renderer: NativeAdRenderer<T>,
+        nativeAd: NativeAd
+    ) {
+        val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
+        renderer.bind(binding, nativeAd)
+        val adView = renderer.root(binding)
+        AdmobManager.shimmerFrameLayout?.stopShimmer()
+        viewNativeAd.removeAllViews()
+        viewNativeAd.addView(adView)
+    }
+
+    private fun resolveNativeAdId(
+        context: Context,
+        requestedId: String,
+        isFullscreen: Boolean
+    ): String? {
+        val adId = if (AdmobManager.isTestAd) {
+            if (isFullscreen) {
+                context.getString(R.string.id_test_native_admob_fullscrren)
+            } else {
+                context.getString(R.string.id_test_native_admob)
+            }
+        } else {
+            requestedId
+        }
+        return adId.takeIf { it.isNotBlank() }
     }
 
     private fun createNativeLoadingView(

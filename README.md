@@ -235,18 +235,12 @@ The host app is responsible for:
 2. creating a `NativeAdRenderer`
 3. binding views with ViewBinding
 
-### 1. Create a holder
-
-```kotlin
-val nativeHolder = NativeAdHolder("ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy")
-```
-
-### 2. Load native ad first
+### 1. Load native ad first
 
 ```kotlin
 AdmobManager.loadNativeAd(
     context = this,
-    nativeHolder = nativeHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallBack = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdFailed(error: String) {}
@@ -256,7 +250,7 @@ AdmobManager.loadNativeAd(
 )
 ```
 
-### 3. Create a renderer
+### 2. Create a renderer
 
 Example renderer:
 
@@ -313,12 +307,12 @@ class MediumNativeAdRenderer : NativeAdRenderer<AdUnifiedMediumBinding> {
 }
 ```
 
-### 4. Show preloaded native ad
+### 3. Show preloaded native ad
 
 ```kotlin
 AdmobManager.showNativeAd(
     activity = this,
-    nativeHolder = nativeHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     viewNativeAd = binding.nativeContainer,
     renderer = MediumNativeAdRenderer(),
     adCallBack = object : AdmobManager.ShowAdCallBack {
@@ -337,12 +331,12 @@ AdmobManager.showNativeAd(
 )
 ```
 
-### 5. Load and show native ad directly
+### 4. Load and show native ad directly
 
 ```kotlin
 AdmobManager.loadAndShowNativeAd(
     activity = this,
-    nativeHolder = nativeHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     viewNativeAd = binding.nativeContainer,
     renderer = MediumNativeAdRenderer(),
     adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
@@ -363,7 +357,7 @@ Load:
 ```kotlin
 AdmobManager.loadNativeAdFullScreen(
     context = this,
-    nativeHolder = nativeHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     mediaAspectRatio = MediaAspectRatio.PORTRAIT,
     adCallBack = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
@@ -379,7 +373,7 @@ Show:
 ```kotlin
 AdmobManager.showNativeAdFullScreen(
     activity = this,
-    nativeHolder = nativeHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     viewNativeAd = binding.fullscreenNativeContainer,
     renderer = FullscreenNativeAdRenderer(),
     adCallBack = object : AdmobManager.ShowAdCallBack {
@@ -416,11 +410,9 @@ AdmobManager.loadAndShowNativeAdFullScreen(
 ### Load interstitial
 
 ```kotlin
-val interHolder = InterAdHolder("ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy")
-
 AdmobManager.loadInterstitialAd(
     activity = this,
-    interHolder = interHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adLoadCallback = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdFailed(error: String) {}
@@ -435,7 +427,7 @@ AdmobManager.loadInterstitialAd(
 ```kotlin
 AdmobManager.showInterstitialAd(
     activity = this,
-    interHolder = interHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallback = object : AdmobManager.ShowAdCallBack {
         override fun onAdShowed() {}
         override fun onAdFailed(error: String) {}
@@ -450,7 +442,7 @@ AdmobManager.showInterstitialAd(
 ```kotlin
 AdmobManager.loadAndShowInterstitialAd(
     activity = this,
-    interHolder = interHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallback = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
@@ -484,11 +476,9 @@ AdmobManager.loadAndShowRewardAd(
 ### Rewarded interstitial
 
 ```kotlin
-val rewardHolder = RewardInterAdHolder("ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy")
-
 AdmobManager.loadInterReward(
     context = this,
-    rewardInterAdHolder = rewardHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallBack = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdFailed(error: String) {}
@@ -499,7 +489,7 @@ AdmobManager.loadInterReward(
 
 AdmobManager.showInterReward(
     activity = this,
-    rewardInterAdHolder = rewardHolder,
+    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallback = object : AdmobManager.ShowRewardAdCallBack {
         override fun onAdShowed() {}
         override fun onAdClosed() {}

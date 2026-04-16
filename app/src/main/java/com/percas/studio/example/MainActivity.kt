@@ -18,9 +18,6 @@ import com.percas.studio.example.nativead.MediumNativeAdRenderer
 import com.percas.studio.example.nativead.SmallNativeAdRenderer
 import com.percas.studio.template.admob.AdmobManager
 import com.percas.studio.template.admob.renderer.NativeAdRenderer
-import com.percas.studio.template.model.InterAdHolder
-import com.percas.studio.template.model.NativeAdHolder
-import com.percas.studio.template.model.RewardInterAdHolder
 
 
 class MainActivity : AppCompatActivity() {
@@ -64,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             binding.flNativeSmall.visibility = View.GONE
             showNativeAd(
                 this,
-                Ads.nativeHolder,
+                "",
                 binding.flNativeMedium,
                 MediumNativeAdRenderer()
             )
@@ -75,7 +72,7 @@ class MainActivity : AppCompatActivity() {
             binding.flNativeMedium.visibility = View.GONE
             showNativeAd(
                 this,
-                Ads.nativeHolder,
+                "",
                 binding.flNativeSmall,
                 SmallNativeAdRenderer()
             )
@@ -88,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             binding.flNativeMedium.visibility = View.VISIBLE
             loadAndShowNativeAds(
                 this,
-                Ads.nativeHolder3,
+                "",
                 binding.flNativeMedium,
                 MediumNativeAdRenderer()
             )
@@ -97,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnShownativefullscreen.setOnClickListener {
             showNativeAdFullScreen(
                 this,
-                Ads.nativeHolder2,
+                "",
                 binding.flNativeFullscreen,
                 FullscreenNativeAdRenderer()
             )
@@ -112,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
         binding.btnInterNoload.setOnClickListener { 
-            AdmobManager.loadAndShowInterstitialAdWithoutLoadingScreen(this, Ads.interholder, object :AdmobManager.LoadAndShowAdCallBack{
+            AdmobManager.loadAndShowInterstitialAdWithoutLoadingScreen(this, "", object :AdmobManager.LoadAndShowAdCallBack{
                 override fun onAdLoaded() {
                     
                 }
@@ -141,18 +138,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnShowinter.setOnClickListener {
-            showInterstitialAd(this, Ads.interholder)
+            showInterstitialAd(this, "")
         }
 
         binding.btnLoadandshowinter.setOnClickListener {
-            loadAndShowInterstitialAd(this, Ads.interholder2)
+            loadAndShowInterstitialAd(this, "")
         }
 
         binding.btnLoadAndShowreward.setOnClickListener {
             loadAndShowRewardAd(this, "")
         }
         binding.btnShowInterReward.setOnClickListener {
-            showRewardInterAd(this, Ads.interRewardHolder)
+            showRewardInterAd(this, "")
         }
         binding.btnShowbanner.setOnClickListener {
             isshow = !isshow
@@ -241,13 +238,13 @@ class MainActivity : AppCompatActivity() {
 
     fun <T : ViewBinding> showNativeAd(
         activity: Activity,
-        nativeAdHolder: NativeAdHolder,
+        idAd: String,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>
     ) {
         AdmobManager.showNativeAd(
             activity,
-            nativeAdHolder,
+            idAd,
             viewNativeAd,
             renderer,
             object : AdmobManager.ShowAdCallBack {
@@ -273,12 +270,12 @@ class MainActivity : AppCompatActivity() {
 
     fun <T : ViewBinding> loadAndShowNativeAds(
         activity: Activity,
-        nativeAdHolder: NativeAdHolder,
+        idAd: String,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>
     ) {
         AdmobManager.loadAndShowNativeAd(activity,
-            nativeAdHolder,
+            idAd,
             viewNativeAd,
             renderer,
             object : AdmobManager.LoadAndShowAdCallBack {
@@ -311,13 +308,13 @@ class MainActivity : AppCompatActivity() {
 
     fun <T : ViewBinding> showNativeAdFullScreen(
         activity: Activity,
-        nativeAdHolder: NativeAdHolder,
+        idAd: String,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>
     ) {
         AdmobManager.showNativeAdFullScreen(
             activity,
-            nativeAdHolder,
+            idAd,
             viewNativeAd,
             renderer,
             object : AdmobManager.ShowAdCallBack {
@@ -387,10 +384,10 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    fun showInterstitialAd(activity: Activity, interAdHolder: InterAdHolder) {
+    fun showInterstitialAd(activity: Activity, idAd: String) {
         AdmobManager.showInterstitialAd(
             activity,
-            interAdHolder,
+            idAd,
             object : AdmobManager.ShowAdCallBack {
                 override fun onAdShowed() {
 
@@ -409,10 +406,10 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    fun loadAndShowInterstitialAd(activity: Activity, interAdHolder: InterAdHolder) {
+    fun loadAndShowInterstitialAd(activity: Activity, idAd: String) {
         AdmobManager.loadAndShowInterstitialAd(
             activity,
-            interAdHolder,
+            idAd,
             object : AdmobManager.LoadAndShowAdCallBack {
                 override fun onAdLoaded() {
 
@@ -467,10 +464,10 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    fun showRewardInterAd(activity: Activity, rewardInterAdHolder: RewardInterAdHolder) {
+    fun showRewardInterAd(activity: Activity, idAd: String) {
         AdmobManager.showInterReward(
             activity,
-            rewardInterAdHolder,
+            idAd,
             object : AdmobManager.ShowRewardAdCallBack {
                 override fun onAdShowed() {
 
