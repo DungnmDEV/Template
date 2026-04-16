@@ -124,6 +124,77 @@ AdmobManager.loadNativeAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", callba
 AdmobManager.showNativeAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", binding.nativeContainer, renderer, showCallback)
 ```
 
+#### Giải thích `renderer` cho Native Ad
+
+`renderer` là nơi bạn định nghĩa cách map dữ liệu `NativeAd` vào layout của app. Library không tự biết layout của bạn, nên bắt buộc phải có `NativeAdRenderer<T : ViewBinding>`.
+
+Vai trò từng hàm trong `NativeAdRenderer`:
+
+- `inflate(...)`: inflate file layout native ad của bạn.
+- `root(...)`: trả về `NativeAdView` gốc trong layout.
+- `bind(...)`: gán dữ liệu (`headline`, `body`, `cta`, `icon`, `media`...) vào view.
+
+Ví dụ renderer đầy đủ:
+
+```kotlin
+class MediumNativeAdRenderer : NativeAdRenderer<AdUnifiedMediumBinding> {
+    override val loadingStyle = NativeAdLoadingStyle.MEDIUM
+
+    override fun inflate(
+        layoutInflater: LayoutInflater,
+        parent: ViewGroup,
+    ): AdUnifiedMediumBinding {
+        return AdUnifiedMediumBinding.inflate(layoutInflater, parent, false)
+    }
+
+    override fun root(binding: AdUnifiedMediumBinding): NativeAdView = binding.root
+
+    override fun bind(binding: AdUnifiedMediumBinding, nativeAd: NativeAd) {
+        // 1) Map các asset view bắt buộc/khuyến nghị cho Google NativeAdView
+        binding.root.mediaView = binding.adMedia
+        binding.root.headlineView = binding.adHeadline
+        binding.root.bodyView = binding.adBody
+        binding.root.callToActionView = binding.adCallToAction
+        binding.root.iconView = binding.adAppIcon
+
+        // 2) Set dữ liệu
+        binding.adHeadline.text = nativeAd.headline
+        binding.adMedia.mediaContent = nativeAd.mediaContent
+
+        binding.adBody.apply {
+            text = nativeAd.body
+            visibility = if (nativeAd.body.isNullOrBlank()) View.INVISIBLE else View.VISIBLE
+        }
+
+        binding.adCallToAction.apply {
+            text = nativeAd.callToAction
+            visibility = if (nativeAd.callToAction.isNullOrBlank()) View.INVISIBLE else View.VISIBLE
+        }
+
+        if (nativeAd.icon == null) {
+            binding.adAppIcon.visibility = View.GONE
+        } else {
+            binding.adAppIcon.setImageDrawable(nativeAd.icon!!.drawable)
+            binding.adAppIcon.visibility = View.VISIBLE
+        }
+
+        // 3) Bắt buộc: báo cho SDK biết đã bind xong native ad
+        binding.root.setNativeAd(nativeAd)
+    }
+}
+```
+
+Checklist để tránh lỗi Native:
+
+- Layout root phải là `NativeAdView`.
+- Trong `bind(...)`, luôn gọi `binding.root.setNativeAd(nativeAd)` ở cuối.
+- Khi field null (`body`, `icon`, `cta`...), nhớ ẩn view tương ứng.
+- `showNativeAd(...)` chỉ dùng khi ad đã được load trước; nếu chưa load dùng `loadAndShowNativeAd(...)`.
+- Có thể tham khảo renderer mẫu trong app demo:
+  - `app/src/main/java/com/percas/studio/example/nativead/MediumNativeAdRenderer.kt`
+  - `app/src/main/java/com/percas/studio/example/nativead/SmallNativeAdRenderer.kt`
+  - `app/src/main/java/com/percas/studio/example/nativead/FullscreenNativeAdRenderer.kt`
+
 ### Interstitial
 
 ```kotlin

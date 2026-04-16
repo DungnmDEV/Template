@@ -305,6 +305,22 @@ object AdmobManager {
         }
     }
 
+    fun loadAndShowInterstitialAdOnSplash(
+        activity: Activity,
+        idAd: String,
+        timeoutMillis: Long = 10_000L,
+        adCallback: LoadAndShowAdCallBack,
+    ) {
+        requireConsent(context = activity, onFail = adCallback::onAdFailed) {
+            InterstitialAdManager.loadAndShowInterstitialAdOnSplash(
+                activity = activity,
+                idAd = idAd,
+                timeoutMillis = timeoutMillis,
+                adCallback = adCallback,
+            )
+        }
+    }
+
     fun loadAndShowRewardAd(
         activity: Activity,
         admobId: String,

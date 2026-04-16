@@ -10,6 +10,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.Window
 import android.widget.LinearLayout
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -452,6 +453,171 @@ internal object InterstitialAdManager {
                     Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
                 }
             })
+    }
+
+    fun loadAndShowInterstitialAdOnSplash(
+        activity: Activity,
+        idAd: String,
+        timeoutMillis: Long,
+        adCallback: AdmobManager.LoadAndShowAdCallBack,
+    ) {
+        val tag = "Load and show SPLASH INTERSTITIAL AD"
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
+        }
+        if (AdmobCore.isOverlayAdShowing) {
+            adCallback.onAdFailed(error(AdErrorCode.ALREADY_SHOWING, "Other ad is showing!"))
+            Log.e(tag, "Other ad is showing!")
+            return
+        }
+        if (!AdmobCore.isEnableAd) {
+            adCallback.onAdFailed(error(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
+            Log.e(tag, "Ads is DISABLE now!")
+            enableResumeAdsIfNeeded()
+            return
+        }
+        if (!activity.isNetworkConnected()) {
+            adCallback.onAdFailed(error(AdErrorCode.NO_INTERNET, "No Internet!"))
+            Log.e(tag, "No Internet!")
+            enableResumeAdsIfNeeded()
+            return
+        }
+
+        val resolvedId = resolveInterstitialId(activity, idAd)
+        if (resolvedId == null) {
+            Log.e(tag, "Ad Id is blank!")
+            adCallback.onAdFailed(error(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
+            return
+        }
+
+        val loadingDialog = createLoadingDialog(activity)
+        val lifecycleOwner = activity as? LifecycleOwner
+        val handler = Handler(Looper.getMainLooper())
+
+        AdmobCore.isOverlayAdShowing = true
+
+        var finished = false
+        var pendingAd: InterstitialAd? = null
+        var resumeObserver: DefaultLifecycleObserver? = null
+
+        fun cleanUpAndReleaseOverlay() {
+            dismissDialog(loadingDialog)
+            AdmobCore.isOverlayAdShowing = false
+            enableResumeAdsIfNeeded()
+        }
+
+        val timeoutRunnable = Runnable {
+            if (finished) return@Runnable
+            finished = true
+            resumeObserver?.let { observer ->
+                lifecycleOwner?.lifecycle?.removeObserver(observer)
+            }
+            pendingAd = null
+            cleanUpAndReleaseOverlay()
+            adCallback.onAdFailed(error(AdErrorCode.TIMEOUT, "Splash interstitial timeout!"))
+            Log.e(tag, "Splash interstitial timeout!")
+        }
+        handler.postDelayed(timeoutRunnable, timeoutMillis)
+
+        InterstitialAd.load(
+            activity,
+            resolvedId,
+            AdmobCore.adRequest!!,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    if (finished) return
+                    adCallback.onAdLoaded()
+
+                    interstitialAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+                        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                            if (finished) return
+                            finished = true
+                            handler.removeCallbacks(timeoutRunnable)
+                            InternalAdCache.clearInterstitial(resolvedId)
+                            cleanUpAndReleaseOverlay()
+                            adCallback.onAdFailed(
+                                error(
+                                    AdErrorCode.SHOW_FAILED,
+                                    adError.message + "\nCause\n" + adError.cause
+                                )
+                            )
+                            Log.e(tag, adError.message + "\nCause\n" + adError.cause)
+                        }
+
+                        override fun onAdDismissedFullScreenContent() {
+                            if (finished) return
+                            finished = true
+                            handler.removeCallbacks(timeoutRunnable)
+                            InternalAdCache.clearInterstitial(resolvedId)
+                            cleanUpAndReleaseOverlay()
+                            adCallback.onAdClosed()
+                            Log.d(tag, "onAdClosed")
+                        }
+
+                        override fun onAdShowedFullScreenContent() {
+                            if (finished) return
+                            adCallback.onAdShowed()
+                            dismissDialog(loadingDialog)
+                            Log.d(tag, "onAdShowed")
+                        }
+                    }
+
+                    interstitialAd.setOnPaidEventListener { adValue ->
+                        adCallback.onAdPaid(
+                            adValue,
+                            interstitialAd.adUnitId,
+                            interstitialAd.responseInfo.mediationAdapterClassName ?: "GoogleAdmob"
+                        )
+                    }
+
+                    if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                        interstitialAd.show(activity)
+                        return
+                    }
+
+                    if (lifecycleOwner == null) {
+                        finished = true
+                        handler.removeCallbacks(timeoutRunnable)
+                        cleanUpAndReleaseOverlay()
+                        adCallback.onAdFailed(
+                            error(
+                                AdErrorCode.BACKGROUND_STATE,
+                                "Activity is not lifecycle-aware for splash interstitial"
+                            )
+                        )
+                        return
+                    }
+
+                    pendingAd = interstitialAd
+                    resumeObserver = object : DefaultLifecycleObserver {
+                        override fun onResume(owner: LifecycleOwner) {
+                            val adToShow = pendingAd ?: return
+                            if (finished) return
+                            if (!owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
+                            pendingAd = null
+                            owner.lifecycle.removeObserver(this)
+                            adToShow.show(activity)
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(resumeObserver!!)
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    if (finished) return
+                    finished = true
+                    handler.removeCallbacks(timeoutRunnable)
+                    InternalAdCache.clearInterstitial(resolvedId)
+                    cleanUpAndReleaseOverlay()
+                    adCallback.onAdFailed(
+                        error(
+                            AdErrorCode.LOAD_FAILED,
+                            loadAdError.message + "\nCause\n" + loadAdError.cause
+                        )
+                    )
+                    Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
+                }
+            }
+        )
     }
 
     private fun showInterstitialAdNew(
