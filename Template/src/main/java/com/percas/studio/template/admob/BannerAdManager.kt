@@ -28,12 +28,12 @@ internal object BannerAdManager {
         val tag = "Load and show BANNER AD"
         if (!AdmobCore.isEnableAd) {
             Log.e(tag, "Ads is Disable now!")
-            adCallBack.onAdFailed("Ads is Disable now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is Disable now!"))
             return
         }
         if (!activity.isNetworkConnected()) {
             Log.e(tag, "No internet!")
-            adCallBack.onAdFailed("No internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No internet!"))
             return
         }
         val adView = AdView(activity)
@@ -45,7 +45,7 @@ internal object BannerAdManager {
 
         if (adView.adUnitId.isBlank()) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
@@ -78,7 +78,12 @@ internal object BannerAdManager {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 shimmerFrameLayout?.stopShimmer()
                 viewBannerAd.removeView(overlayView)
-                adCallBack.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
+                adCallBack.onAdFailed(
+                    AdErrorInfo(
+                        AdErrorCode.LOAD_FAILED,
+                        adError.message + "\nCause:\n" + adError.cause
+                    )
+                )
                 Log.e(tag, adError.message + "\nCause:\n" + adError.cause)
             }
 
@@ -96,7 +101,12 @@ internal object BannerAdManager {
             adView.loadAd(AdmobCore.adRequest!!)
         } else {
             Log.d(tag, "Admob is not init now. Check it before load ad!")
-            adCallBack.onAdFailed("Admob is not init now. Check it before load ad!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.NOT_INITIALIZED,
+                    "Admob is not init now. Check it before load ad!"
+                )
+            )
         }
     }
 
@@ -109,14 +119,14 @@ internal object BannerAdManager {
     ) {
         val tag = "Load and show BANNER COLLAPSIBLE AD"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is Disable now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is Disable now!"))
             Log.e(tag, "Ads is Disable now!")
             return
         }
 
         if (!activity.isNetworkConnected()) {
             Log.e(tag, "No Internet!")
-            adCallBack.onAdFailed("No internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No internet!"))
             return
         }
         val adView = AdView(activity)
@@ -127,7 +137,7 @@ internal object BannerAdManager {
         }
         if (adView.adUnitId.isBlank()) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
         val adSize = getAdSize(activity, viewBanner.width.toFloat())
@@ -165,7 +175,12 @@ internal object BannerAdManager {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 shimmerFrameLayout?.stopShimmer()
                 viewBanner.removeView(overlayView)
-                adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
+                adCallBack.onAdFailed(
+                    AdErrorInfo(
+                        AdErrorCode.LOAD_FAILED,
+                        adError.message + "\nCause\n" + adError.cause
+                    )
+                )
                 Log.e(tag, "onAdFailedToLoad: " + adError.message + "\nCause\n" + adError.cause)
             }
 

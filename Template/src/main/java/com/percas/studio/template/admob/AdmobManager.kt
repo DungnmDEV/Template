@@ -45,12 +45,11 @@ object AdmobManager {
         }
 
     @JvmStatic
-    fun initAdmob(context: Context?, timeOut: Int, isTestAd: Boolean, isEnableAd: Boolean) {
-
-        if (timeOut < 5000 && timeOut != 0) {
+    fun initAdmob(context: Context?, config: AdmobConfig) {
+        if (config.requestTimeoutMillis < 5000 && config.requestTimeoutMillis != 0) {
             Toast.makeText(context, "Limit time ~10000", Toast.LENGTH_LONG).show()
         }
-        AdmobCore.updateConfig(timeOut, isTestAd, isEnableAd)
+        AdmobCore.updateConfig(config)
 
         MobileAds.initialize(context!!) {}
 
@@ -61,7 +60,19 @@ object AdmobManager {
             .build()
         MobileAds.setRequestConfiguration(configuration)
 
-        initAdRequest(timeOut)
+        initAdRequest(config.requestTimeoutMillis)
+    }
+
+    @JvmStatic
+    fun initAdmob(context: Context?, timeOut: Int, isTestAd: Boolean, isEnableAd: Boolean) {
+        initAdmob(
+            context,
+            AdmobConfig(
+                requestTimeoutMillis = timeOut,
+                isTestAd = isTestAd,
+                isEnableAd = isEnableAd
+            )
+        )
     }
 
     @JvmStatic
@@ -242,14 +253,14 @@ object AdmobManager {
 
     interface LoadAdCallBack {
         fun onAdLoaded()
-        fun onAdFailed(error: String)
+        fun onAdFailed(error: AdErrorInfo)
         fun onAdClicked()
         fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 
     interface ShowAdCallBack {
         fun onAdShowed()
-        fun onAdFailed(error: String)
+        fun onAdFailed(error: AdErrorInfo)
         fun onAdClosed()
         fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
@@ -257,7 +268,7 @@ object AdmobManager {
     interface LoadAndShowAdCallBack {
         fun onAdLoaded()
         fun onAdShowed()
-        fun onAdFailed(error: String)
+        fun onAdFailed(error: AdErrorInfo)
         fun onAdClosed()
         fun onAdClicked()
         fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
@@ -267,14 +278,14 @@ object AdmobManager {
         fun onAdShowed()
         fun onAdClosed()
         fun onAdEarned()
-        fun onAdFailed(error: String)
+        fun onAdFailed(error: AdErrorInfo)
         fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)
     }
 
     interface LoadAndShowRewardAdCallBack {
         fun onAdLoaded()
         fun onAdShowed()
-        fun onAdFailed(error: String)
+        fun onAdFailed(error: AdErrorInfo)
         fun onAdClosed()
         fun onAdEarned()
         fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String)

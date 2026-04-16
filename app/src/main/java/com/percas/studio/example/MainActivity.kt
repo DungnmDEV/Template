@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
+import com.percas.studio.template.admob.AdErrorInfo
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.example.databinding.ActivityMainBinding
@@ -118,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                     
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     
                 }
 
@@ -182,7 +183,7 @@ class MainActivity : AppCompatActivity() {
                     viewLine.visibility = View.VISIBLE
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     viewBannerAd.visibility = View.GONE
                     viewLine.visibility = View.GONE
                 }
@@ -216,7 +217,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     viewBannerCollapsibleAd.visibility = View.GONE
                     viewLine.visibility = View.GONE
                 }
@@ -252,7 +253,7 @@ class MainActivity : AppCompatActivity() {
                     viewNativeAd.visibility = View.VISIBLE
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     viewNativeAd.visibility = View.GONE
                 }
 
@@ -287,7 +288,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     viewNativeAd.visibility = View.GONE
                 }
 
@@ -325,7 +326,7 @@ class MainActivity : AppCompatActivity() {
                     }, 10000)
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     viewNativeAd.visibility = View.GONE
                 }
 
@@ -365,7 +366,7 @@ class MainActivity : AppCompatActivity() {
                     }, 10000)
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                     viewNativeAd.visibility = View.GONE
                 }
 
@@ -393,7 +394,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                 }
 
                 override fun onAdClosed() {
@@ -419,7 +420,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                 }
 
                 override fun onAdClosed() {
@@ -447,7 +448,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onAdShowed() {
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                 }
 
                 override fun onAdClosed() {
@@ -481,7 +482,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Collected Reward", Toast.LENGTH_LONG).show()
                 }
 
-                override fun onAdFailed(error: String) {
+                override fun onAdFailed(error: AdErrorInfo) {
                 }
 
                 override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {

@@ -100,9 +100,11 @@ class MyApplication : Application() {
 
         AdmobManager.initAdmob(
             context = this,
-            timeOut = 10_000,
-            isTestAd = true,
-            isEnableAd = true,
+            config = AdmobConfig(
+                requestTimeoutMillis = 10_000,
+                isTestAd = true,
+                isEnableAd = true,
+            )
         )
     }
 }
@@ -130,9 +132,11 @@ Example:
 ```kotlin
 AdmobManager.initAdmob(
     context = this,
-    timeOut = 10_000,
-    isTestAd = false,
-    isEnableAd = true,
+    config = AdmobConfig(
+        requestTimeoutMillis = 10_000,
+        isTestAd = false,
+        isEnableAd = true,
+    )
 )
 ```
 
@@ -166,7 +170,14 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        AdmobManager.initAdmob(this, 10_000, true, true)
+        AdmobManager.initAdmob(
+            context = this,
+            config = AdmobConfig(
+                requestTimeoutMillis = 10_000,
+                isTestAd = true,
+                isEnableAd = true,
+            )
+        )
 
         AppOpenManager.enableResumeMode(
             application = this,
@@ -192,7 +203,7 @@ AppOpenManager.showOnSlash(
             finish()
         }
 
-        override fun onAdFail(error: String) {
+        override fun onAdFail(error: AdErrorInfo) {
             startActivity(Intent(this@SplashActivity, MainActivity::class.java))
             finish()
         }
@@ -214,7 +225,7 @@ AdmobManager.loadAndShowBannerAd(
     adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
@@ -233,7 +244,7 @@ AdmobManager.loadAndShowBannerCollapsibleAd(
     adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
@@ -266,7 +277,7 @@ AdmobManager.loadNativeAd(
     idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallBack = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -338,7 +349,7 @@ AdmobManager.showNativeAd(
     renderer = MediumNativeAdRenderer(),
     adCallBack = object : AdmobManager.ShowAdCallBack {
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -356,7 +367,7 @@ AdmobManager.loadAndShowNativeAd(
     adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
@@ -375,7 +386,7 @@ AdmobManager.loadNativeAdFullScreen(
     mediaAspectRatio = MediaAspectRatio.PORTRAIT,
     adCallBack = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -392,7 +403,7 @@ AdmobManager.showNativeAdFullScreen(
     renderer = FullscreenNativeAdRenderer(),
     adCallBack = object : AdmobManager.ShowAdCallBack {
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -411,7 +422,7 @@ AdmobManager.loadAndShowNativeAdFullScreen(
     adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
@@ -429,7 +440,7 @@ AdmobManager.loadInterstitialAd(
     idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adLoadCallback = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -444,7 +455,7 @@ AdmobManager.showInterstitialAd(
     idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallback = object : AdmobManager.ShowAdCallBack {
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -460,7 +471,7 @@ AdmobManager.loadAndShowInterstitialAd(
     adCallback = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
@@ -479,7 +490,7 @@ AdmobManager.loadAndShowRewardAd(
     adCallback = object : AdmobManager.LoadAndShowRewardAdCallBack {
         override fun onAdLoaded() {}
         override fun onAdShowed() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClosed() {}
         override fun onAdEarned() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
@@ -495,7 +506,7 @@ AdmobManager.loadInterReward(
     idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
     adCallBack = object : AdmobManager.LoadAdCallBack {
         override fun onAdLoaded() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdClicked() {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
@@ -508,7 +519,7 @@ AdmobManager.showInterReward(
         override fun onAdShowed() {}
         override fun onAdClosed() {}
         override fun onAdEarned() {}
-        override fun onAdFailed(error: String) {}
+        override fun onAdFailed(error: AdErrorInfo) {}
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
 )

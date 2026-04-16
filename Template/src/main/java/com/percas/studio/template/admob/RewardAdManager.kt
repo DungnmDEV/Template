@@ -33,18 +33,18 @@ internal object RewardAdManager {
     ) {
         val tag = "Load and show REWARD AD"
         if (!AdmobCore.isEnableAd) {
-            adCallback.onAdFailed("Ads is DISABLE now!")
+            adCallback.onAdFailed(error(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
             Log.e(tag, "Ads is DISABLE now!")
             return
         }
 
         if (!activity.isNetworkConnected()) {
-            adCallback.onAdFailed("No Internet!")
+            adCallback.onAdFailed(error(AdErrorCode.NO_INTERNET, "No Internet!"))
             Log.e(tag, "No Internet!")
             return
         }
         if (AdmobCore.isOverlayAdShowing) {
-            adCallback.onAdFailed("Other ad is showing!")
+            adCallback.onAdFailed(error(AdErrorCode.ALREADY_SHOWING, "Other ad is showing!"))
             Log.e(tag, "Other ad is showing!")
             return
         }
@@ -55,7 +55,7 @@ internal object RewardAdManager {
         val idReward = resolveRewardId(activity, admobId)
         if (idReward == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallback.onAdFailed("Ad Id is blank!")
+            adCallback.onAdFailed(error(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
@@ -65,7 +65,7 @@ internal object RewardAdManager {
 
         RewardedAd.load(activity, idReward, AdmobCore.adRequest!!, object : RewardedAdLoadCallback() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                adCallback.onAdFailed(loadAdError.message + "\nCause:\n" + loadAdError.cause)
+                adCallback.onAdFailed(error(AdErrorCode.LOAD_FAILED, loadAdError.message + "\nCause:\n" + loadAdError.cause))
                 Log.e(tag, loadAdError.message + "\nCause:\n" + loadAdError.cause)
                 dismissDialog(loadingDialog)
                 enableResumeAdsIfNeeded()
@@ -93,7 +93,7 @@ internal object RewardAdManager {
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                         AdmobCore.isOverlayAdShowing = false
-                        adCallback.onAdFailed(adError.message + "\nCause:n\n" + adError.cause)
+                        adCallback.onAdFailed(error(AdErrorCode.SHOW_FAILED, adError.message + "\nCause:n\n" + adError.cause))
                         Log.e(tag, adError.message + "\nCause:n\n" + adError.cause)
                         dismissDialog(loadingDialog)
                         enableResumeAdsIfNeeded()
@@ -120,7 +120,7 @@ internal object RewardAdManager {
                     dismissDialog(loadingDialog)
                     AdmobCore.isOverlayAdShowing = false
                     enableResumeAdsIfNeeded()
-                    adCallback.onAdFailed("Your App is showing on resume ad!")
+                    adCallback.onAdFailed(error(AdErrorCode.BACKGROUND_STATE, "Your App is showing on resume ad!"))
                     Log.e(tag, "Your App is showing on resume ad!")
                 }
             }
@@ -134,25 +134,25 @@ internal object RewardAdManager {
     ) {
         val tag = "Load INTERSTITIAL REWARD AD"
         if (!AdmobCore.isEnableAd) {
-            adLoadCallback.onAdFailed("Ads is DISABLE now!")
+            adLoadCallback.onAdFailed(error(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
             Log.e(tag, "Ads is DISABLE now!")
             return
         }
 
         if (!context.isNetworkConnected()) {
-            adLoadCallback.onAdFailed("No Internet!")
+            adLoadCallback.onAdFailed(error(AdErrorCode.NO_INTERNET, "No Internet!"))
             Log.e(tag, "No Internet!")
             return
         }
         val resolvedId = resolveRewardInterstitialId(context, idAd)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adLoadCallback.onAdFailed("Ad Id is blank!")
+            adLoadCallback.onAdFailed(error(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
         val rewardState = InternalAdCache.rewardedInterstitial(resolvedId)
         if (rewardState.ad != null) {
-            adLoadCallback.onAdFailed("This Interstitial Ad is not empty. Don't need to load again!")
+            adLoadCallback.onAdFailed(error(AdErrorCode.ALREADY_LOADED, "This Interstitial Ad is not empty. Don't need to load again!"))
             Log.e(tag, "This Interstitial Ad is not empty. Don't need to load again!")
             return
         }
@@ -179,7 +179,7 @@ internal object RewardAdManager {
                     rewardState.ad = null
                     rewardState.isLoading = false
                     rewardState.liveData.value = null
-                    adLoadCallback.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
+                    adLoadCallback.onAdFailed(error(AdErrorCode.LOAD_FAILED, loadAdError.message + "\nCause\n" + loadAdError.cause))
                     Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
                 }
             })
@@ -194,24 +194,24 @@ internal object RewardAdManager {
             AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
         if (AdmobCore.isOverlayAdShowing) {
-            adCallback.onAdFailed("Other ad is showing")
+            adCallback.onAdFailed(error(AdErrorCode.ALREADY_SHOWING, "Other ad is showing"))
             return
         }
         if (!AdmobCore.isEnableAd) {
-            adCallback.onAdFailed("Ads is DISABLE now")
+            adCallback.onAdFailed(error(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now"))
             enableResumeAdsIfNeeded()
             return
         }
 
         if (!activity.isNetworkConnected()) {
-            adCallback.onAdFailed("No Internet")
+            adCallback.onAdFailed(error(AdErrorCode.NO_INTERNET, "No Internet"))
             enableResumeAdsIfNeeded()
             return
         }
 
         val resolvedId = resolveRewardInterstitialId(activity, idAd)
         if (resolvedId == null) {
-            adCallback.onAdFailed("Ad Id is blank!")
+            adCallback.onAdFailed(error(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
         val rewardState = InternalAdCache.rewardedInterstitial(resolvedId)
@@ -227,7 +227,7 @@ internal object RewardAdManager {
                     enableResumeAdsIfNeeded()
                     AdmobCore.isOverlayAdShowing = false
                     dismissDialog(loadingDialog)
-                    adCallback.onAdFailed("Time out!")
+                    adCallback.onAdFailed(error(AdErrorCode.TIMEOUT, "Time out!"))
                 }
             }
             handler.postDelayed(timeoutRunnable, AdmobCore.getTimeout().toLong())
@@ -261,7 +261,7 @@ internal object RewardAdManager {
                             enableResumeAdsIfNeeded()
                             AdmobCore.isOverlayAdShowing = false
                             dismissDialog(loadingDialog)
-                            adCallback.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
+                            adCallback.onAdFailed(error(AdErrorCode.SHOW_FAILED, adError.message + "\nCause:\n" + adError.cause))
                         }
 
                         override fun onAdShowedFullScreenContent() {
@@ -302,7 +302,7 @@ internal object RewardAdManager {
                         enableResumeAdsIfNeeded()
                         AdmobCore.isOverlayAdShowing = false
                         dismissDialog(loadingDialog)
-                        adCallback.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
+                        adCallback.onAdFailed(error(AdErrorCode.SHOW_FAILED, adError.message + "\nCause:\n" + adError.cause))
                     }
 
                     override fun onAdShowedFullScreenContent() {
@@ -314,7 +314,7 @@ internal object RewardAdManager {
                 rewardState.ad?.show(activity) { adCallback.onAdEarned() }
             } else {
                 AdmobCore.isOverlayAdShowing = false
-                adCallback.onAdFailed("Ad is null. Load Inter Reward before show it!")
+                adCallback.onAdFailed(error(AdErrorCode.AD_NOT_READY, "Ad is null. Load Inter Reward before show it!"))
                 dismissDialog(loadingDialog)
                 enableResumeAdsIfNeeded()
             }
@@ -367,6 +367,8 @@ internal object RewardAdManager {
         } catch (_: Exception) {
         }
     }
+
+    private fun error(code: AdErrorCode, message: String) = AdErrorInfo(code, message)
 
     private fun Context.isNetworkConnected(): Boolean = AdmobCore.run { isNetworkConnected() }
 

@@ -57,15 +57,15 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
     ) {
         val resolvedId = resolveAdUnitId(activity, adUnitId)
         if (resolvedId == null) {
-            listener.onAdFail("Ad Id is blank")
+            listener.onAdFail(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank"))
             return
         }
         if (!AdmobCore.isEnableAd) {
-            listener.onAdFail("Ads is DISABLE now")
+            listener.onAdFail(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now"))
             return
         }
         if (AdmobCore.isOverlayAdShowing || isResumeShowing || isStartupShowing) {
-            listener.onAdFail("Other ad is showing")
+            listener.onAdFail(AdErrorInfo(AdErrorCode.ALREADY_SHOWING, "Other ad is showing"))
             return
         }
 
@@ -82,7 +82,7 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
                 AdmobCore.isOverlayAdShowing = false
                 setResumeModeEnabled(true)
                 dismissDialog(startupDialog)
-                listener.onAdFail("Time out")
+                listener.onAdFail(AdErrorInfo(AdErrorCode.TIMEOUT, "Time out"))
             }
         }
         handler.postDelayed(timeoutRunnable, timeout)
@@ -99,7 +99,7 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
                     isStartupShowing = false
                     AdmobCore.isOverlayAdShowing = false
                     setResumeModeEnabled(true)
-                    listener.onAdFail(loadAdError.message)
+                    listener.onAdFail(AdErrorInfo(AdErrorCode.LOAD_FAILED, loadAdError.message))
                 }
 
                 override fun onAdLoaded(ad: AppOpenAd) {
@@ -127,7 +127,7 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
                             isStartupShowing = false
                             AdmobCore.isOverlayAdShowing = false
                             setResumeModeEnabled(true)
-                            listener.onAdFail(adError.message)
+                            listener.onAdFail(AdErrorInfo(AdErrorCode.SHOW_FAILED, adError.message))
                         }
 
                         override fun onAdShowedFullScreenContent() {
@@ -329,7 +329,7 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
 
     interface AppOpenAdListener {
         fun onAdClose()
-        fun onAdFail(error: String)
+        fun onAdFail(error: AdErrorInfo)
         fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String)
     }
 }

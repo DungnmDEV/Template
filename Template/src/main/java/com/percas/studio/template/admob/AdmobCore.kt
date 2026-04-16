@@ -15,10 +15,14 @@ internal object AdmobCore {
 
     private var timeOut = 10000
 
-    fun updateConfig(timeOut: Int, isTestAd: Boolean, isEnableAd: Boolean) {
-        this.timeOut = if (timeOut > 0) timeOut else 10000
-        this.isTestAd = isTestAd
-        this.isEnableAd = isEnableAd
+    fun updateConfig(config: AdmobConfig) {
+        timeOut = if (config.requestTimeoutMillis > 0) {
+            config.requestTimeoutMillis
+        } else {
+            10000
+        }
+        isTestAd = config.isTestAd
+        isEnableAd = config.isEnableAd
     }
 
     fun getTimeout(): Int = timeOut

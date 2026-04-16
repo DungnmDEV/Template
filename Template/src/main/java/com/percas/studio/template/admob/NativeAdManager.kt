@@ -41,12 +41,12 @@ internal object NativeAdManager {
     ) {
         val tag = "Load NATIVE AD"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is Disable now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is Disable now!"))
             Log.e(tag, "Ads is Disable now!")
             return
         }
         if (!context.isNetworkConnected()) {
-            adCallBack.onAdFailed("No internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No internet!"))
             Log.e(tag, "No Internet!")
             return
         }
@@ -54,18 +54,23 @@ internal object NativeAdManager {
         val resolvedId = resolveNativeAdId(context, idAd, isFullscreen = false)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
         val state = nativeAds.getOrPut(resolvedId) { NativeAdState() }
         if (state.nativeAd != null) {
-            adCallBack.onAdFailed("This Native ad is not empty. Don't need to load again!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.ALREADY_LOADED,
+                    "This Native ad is not empty. Don't need to load again!"
+                )
+            )
             Log.e(tag, "This Native ad is not empty. Don't need to load again!")
             return
         }
         if (state.isLoading) {
-            adCallBack.onAdFailed("Native ad is loading!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.INVALID_STATE, "Native ad is loading!"))
             Log.e(tag, "Native ad is loading!")
             return
         }
@@ -95,7 +100,12 @@ internal object NativeAdManager {
                     state.nativeAd = null
                     state.isLoading = false
                     state.liveData.value = null
-                    adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
+                    adCallBack.onAdFailed(
+                        AdErrorInfo(
+                            AdErrorCode.LOAD_FAILED,
+                            adError.message + "\nCause\n" + adError.cause
+                        )
+                    )
                     Log.e(tag, "onAdFailedToLoad: " + adError.message + "\nCause\n" + adError.cause)
                 }
 
@@ -111,7 +121,12 @@ internal object NativeAdManager {
             adLoader.loadAd(AdmobCore.adRequest!!)
         } else {
             state.isLoading = false
-            adCallBack.onAdFailed("Admob is not init now. Check it before load ad!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.NOT_INITIALIZED,
+                    "Admob is not init now. Check it before load ad!"
+                )
+            )
             Log.e(tag, "Admob is not init now. Check it before load ad!")
         }
     }
@@ -125,12 +140,12 @@ internal object NativeAdManager {
     ) {
         val tag = "Show NATIVE AD"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is DISABLE now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
             Log.e(tag, "Ads is DISABLE now!")
             return
         }
         if (!activity.isNetworkConnected()) {
-            adCallBack.onAdFailed("No Internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No Internet!"))
             Log.e(tag, "No internet!")
             return
         }
@@ -138,7 +153,7 @@ internal object NativeAdManager {
         val resolvedId = resolveNativeAdId(activity, idAd, isFullscreen = false)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
@@ -153,7 +168,7 @@ internal object NativeAdManager {
                 Log.d(tag, "Ad Showed")
             } else {
                 state.liveData.removeObservers(activity as LifecycleOwner)
-                adCallBack.onAdFailed("Native is not loaded!")
+                adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.AD_NOT_READY, "Native is not loaded!"))
                 Log.e(tag, "Native is not loaded!")
             }
             return
@@ -171,12 +186,12 @@ internal object NativeAdManager {
     ) {
         val tag = "Load and show NATIVE AD"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is DISABLE now")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now"))
             Log.e(tag, "Ads is DISABLE now!")
             return
         }
         if (!activity.isNetworkConnected()) {
-            adCallBack.onAdFailed("No Internet")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No Internet"))
             Log.e(tag, "No Internet!")
             return
         }
@@ -184,7 +199,7 @@ internal object NativeAdManager {
         val resolvedId = resolveNativeAdId(activity, idAd, isFullscreen = false)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
@@ -213,7 +228,12 @@ internal object NativeAdManager {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                     shimmerFrameLayout?.stopShimmer()
                     viewNativeAd.removeAllViews()
-                    adCallBack.onAdFailed(adError.message + "\nError Code Ads:\n" + adError.cause)
+                    adCallBack.onAdFailed(
+                        AdErrorInfo(
+                            AdErrorCode.LOAD_FAILED,
+                            adError.message + "\nError Code Ads:\n" + adError.cause
+                        )
+                    )
                     Log.e(tag, adError.message + "\nError Code Ads:\n" + adError.cause)
                 }
 
@@ -229,7 +249,12 @@ internal object NativeAdManager {
         if (AdmobCore.adRequest != null) {
             adLoader.loadAd(AdmobCore.adRequest!!)
         } else {
-            adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.NOT_INITIALIZED,
+                    "Admob is not init now. Check it before load ads!"
+                )
+            )
             Log.e(tag, "Admob is not init now. Check it before load ads!")
         }
     }
@@ -244,12 +269,12 @@ internal object NativeAdManager {
     ) {
         val tag = "Load and show NATIVE FULL SCREEN"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is DISABLE now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
             Log.d(tag, "Ads is DISABLE now!")
             return
         }
         if (!activity.isNetworkConnected()) {
-            adCallBack.onAdFailed("No Internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No Internet!"))
             Log.d(tag, "No internet!")
             return
         }
@@ -257,7 +282,7 @@ internal object NativeAdManager {
         val resolvedId = resolveNativeAdId(activity, idNativeAd, isFullscreen = true)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
@@ -294,14 +319,24 @@ internal object NativeAdManager {
         builder.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                 shimmerFrameLayout?.stopShimmer()
-                adCallBack.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
+                adCallBack.onAdFailed(
+                    AdErrorInfo(
+                        AdErrorCode.LOAD_FAILED,
+                        loadAdError.message + "\nCause\n" + loadAdError.cause
+                    )
+                )
                 Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
             }
         })
         if (AdmobCore.adRequest != null) {
             builder.build().loadAd(AdmobCore.adRequest!!)
         } else {
-            adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.NOT_INITIALIZED,
+                    "Admob is not init now. Check it before load ads!"
+                )
+            )
             Log.e(tag, "Admob is not init now. Check it before load ads!")
         }
     }
@@ -314,12 +349,12 @@ internal object NativeAdManager {
     ) {
         val tag = "Load NATIVE AD FULL SCREEN"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is DISABLE now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
             Log.e(tag, "Ads is DISABLE now!")
             return
         }
         if (!context.isNetworkConnected()) {
-            adCallBack.onAdFailed("No Internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No Internet!"))
             Log.e(tag, "No Internet!")
             return
         }
@@ -327,18 +362,23 @@ internal object NativeAdManager {
         val resolvedId = resolveNativeAdId(context, idAd, isFullscreen = true)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
         val state = fullscreenNativeAds.getOrPut(resolvedId) { NativeAdState() }
         if (state.nativeAd != null) {
-            adCallBack.onAdFailed("This Native ads is not empty. Don't need to load again!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.ALREADY_LOADED,
+                    "This Native ads is not empty. Don't need to load again!"
+                )
+            )
             Log.e(tag, "This Native ads is not empty. Don't need to load again!")
             return
         }
         if (state.isLoading) {
-            adCallBack.onAdFailed("Native ad is loading!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.INVALID_STATE, "Native ad is loading!"))
             Log.e(tag, "Native ad is loading!")
             return
         }
@@ -373,7 +413,12 @@ internal object NativeAdManager {
                 state.nativeAd = null
                 state.isLoading = false
                 state.liveData.value = null
-                adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
+                adCallBack.onAdFailed(
+                    AdErrorInfo(
+                        AdErrorCode.LOAD_FAILED,
+                        adError.message + "\nCause\n" + adError.cause
+                    )
+                )
                 Log.e(tag, adError.message + "\nCause\n" + adError.cause)
             }
 
@@ -386,7 +431,12 @@ internal object NativeAdManager {
             adLoader.build().loadAd(AdmobCore.adRequest!!)
         } else {
             state.isLoading = false
-            adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
+            adCallBack.onAdFailed(
+                AdErrorInfo(
+                    AdErrorCode.NOT_INITIALIZED,
+                    "Admob is not init now. Check it before load ads!"
+                )
+            )
             Log.e(tag, "Admob is not init now. Check it before load ads!")
         }
     }
@@ -400,12 +450,12 @@ internal object NativeAdManager {
     ) {
         val tag = "Show NATIVE AD FULL SCREEN"
         if (!AdmobCore.isEnableAd) {
-            adCallBack.onAdFailed("Ads is DISABLE now!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now!"))
             Log.e(tag, "Ads is DISABLE now!")
             return
         }
         if (!activity.isNetworkConnected()) {
-            adCallBack.onAdFailed("No Internet!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.NO_INTERNET, "No Internet!"))
             Log.e(tag, "No Internet!")
             return
         }
@@ -413,7 +463,7 @@ internal object NativeAdManager {
         val resolvedId = resolveNativeAdId(activity, idAd, isFullscreen = true)
         if (resolvedId == null) {
             Log.e(tag, "Ad Id is blank!")
-            adCallBack.onAdFailed("Ad Id is blank!")
+            adCallBack.onAdFailed(AdErrorInfo(AdErrorCode.BLANK_AD_UNIT_ID, "Ad Id is blank!"))
             return
         }
 
@@ -428,7 +478,12 @@ internal object NativeAdManager {
                 Log.d(tag, "onAdShowed")
             } else {
                 state.liveData.removeObservers(activity as LifecycleOwner)
-                adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd!")
+                adCallBack.onAdFailed(
+                    AdErrorInfo(
+                        AdErrorCode.AD_NOT_READY,
+                        "Load native Ad before show it or use LoadAndShowNativeAd!"
+                    )
+                )
                 Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
             }
             return
@@ -465,7 +520,12 @@ internal object NativeAdManager {
                 state.liveData.removeObservers(activity as LifecycleOwner)
             } else {
                 shimmerFrameLayout?.stopShimmer()
-                adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd")
+                adCallBack.onAdFailed(
+                    AdErrorInfo(
+                        AdErrorCode.AD_NOT_READY,
+                        "Load native Ad before show it or use LoadAndShowNativeAd"
+                    )
+                )
                 Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
                 state.liveData.removeObservers(activity as LifecycleOwner)
             }

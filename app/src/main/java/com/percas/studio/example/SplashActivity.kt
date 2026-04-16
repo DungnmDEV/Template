@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.percas.studio.template.admob.AdErrorInfo
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.template.admob.AdmobManager
@@ -38,7 +39,7 @@ class SplashActivity : AppCompatActivity() {
                 finish()
             }
 
-            override fun onAdFail(error: String) {
+            override fun onAdFail(error: AdErrorInfo) {
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                 finish()
             }
@@ -53,7 +54,7 @@ class SplashActivity : AppCompatActivity() {
                 
             }
 
-            override fun onAdFailed(error: String) {
+            override fun onAdFailed(error: AdErrorInfo) {
                 
             }
 
@@ -74,7 +75,7 @@ class SplashActivity : AppCompatActivity() {
                 
             }
 
-            override fun onAdFailed(error: String) {
+            override fun onAdFailed(error: AdErrorInfo) {
                 
             }
 
@@ -93,7 +94,7 @@ class SplashActivity : AppCompatActivity() {
             override fun onAdLoaded() {
             }
 
-            override fun onAdFailed(error: String) {
+            override fun onAdFailed(error: AdErrorInfo) {
             }
 
             override fun onAdClicked() {
@@ -108,7 +109,7 @@ class SplashActivity : AppCompatActivity() {
             override fun onAdLoaded() {
             }
 
-            override fun onAdFailed(error: String) {
+            override fun onAdFailed(error: AdErrorInfo) {
             }
 
             override fun onAdClicked() {
