@@ -25,7 +25,7 @@ internal object InterstitialAdManager {
         adLoadCallback: AdmobManager.LoadAdCallBack
     ) {
         val tag = "Load INTERSTITIAL AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adLoadCallback.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -51,16 +51,16 @@ internal object InterstitialAdManager {
         }
         interState.isLoading = true
 
-        if (AdmobManager.adRequest == null) {
-            AdmobManager.initAdRequest(AdmobManager.getTimeout())
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
         InterstitialAd.load(
             activity,
             resolvedId,
-            AdmobManager.adRequest!!,
+            AdmobCore.adRequest!!,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    if (AdmobManager.isOverlayAdShowing) {
+                    if (AdmobCore.isOverlayAdShowing) {
                         interState.liveData.value = interstitialAd
                     }
                     interState.ad = interstitialAd
@@ -71,7 +71,7 @@ internal object InterstitialAdManager {
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     interState.isLoading = false
-                    if (AdmobManager.isOverlayAdShowing) {
+                    if (AdmobCore.isOverlayAdShowing) {
                         interState.liveData.value = null
                     }
                     adLoadCallback.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
@@ -86,14 +86,14 @@ internal object InterstitialAdManager {
         adCallback: AdmobManager.ShowAdCallBack,
     ) {
         val tag = "Show INTERSTITIAL AD"
-        if (AdmobManager.isOverlayAdShowing) {
+        if (AdmobCore.isOverlayAdShowing) {
             adCallback.onAdFailed("Other Ads is showing now!")
             Log.e(tag, "Other Ads is showing now!")
             return
         }
 
-        if (!AdmobManager.isEnableAd) {
-            AdmobManager.isOverlayAdShowing = false
+        if (!AdmobCore.isEnableAd) {
+            AdmobCore.isOverlayAdShowing = false
             enableResumeAdsIfNeeded()
             adCallback.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
@@ -101,7 +101,7 @@ internal object InterstitialAdManager {
         }
 
         if (!activity.isNetworkConnected()) {
-            AdmobManager.isOverlayAdShowing = false
+            AdmobCore.isOverlayAdShowing = false
             enableResumeAdsIfNeeded()
             adCallback.onAdFailed("No Internet!")
             Log.e(tag, "No Internet!")
@@ -114,15 +114,15 @@ internal object InterstitialAdManager {
             return
         }
         val interState = InternalAdCache.interstitial(resolvedId)
-        AdmobManager.isOverlayAdShowing = true
+        AdmobCore.isOverlayAdShowing = true
 
         val handler = Handler(Looper.getMainLooper())
         val runnable = Runnable {
             if (interState.isLoading) {
                 enableResumeAdsIfNeeded()
-                AdmobManager.isOverlayAdShowing = false
+                AdmobCore.isOverlayAdShowing = false
                 interState.liveData.removeObservers(activity as LifecycleOwner)
-                AdmobManager.dismissAdDialog()
+                AdmobCore.dismissAdDialog()
                 adCallback.onAdFailed("Time out!")
                 Log.e(tag, "Time out!")
             }
@@ -130,7 +130,7 @@ internal object InterstitialAdManager {
         handler.postDelayed(runnable, 10000)
 
         if (interState.isLoading) {
-            AdmobManager.dialogLoading(activity)
+            AdmobCore.dialogLoading(activity)
 
             interState.liveData.observe((activity as LifecycleOwner)) { interstitialAd: InterstitialAd? ->
                 if (interstitialAd != null) {
@@ -139,20 +139,20 @@ internal object InterstitialAdManager {
                     Handler(Looper.getMainLooper()).postDelayed({
                         interstitialAd.fullScreenContentCallback = object : FullScreenContentCallback() {
                             override fun onAdDismissedFullScreenContent() {
-                                AdmobManager.isOverlayAdShowing = false
+                                AdmobCore.isOverlayAdShowing = false
                                 enableResumeAdsIfNeeded()
                             InternalAdCache.clearInterstitial(resolvedId)
                             interState.liveData.removeObservers(activity as LifecycleOwner)
                                 adCallback.onAdClosed()
                                 Log.d(tag, "onAdClosed")
-                                AdmobManager.dismissAdDialog()
+                                AdmobCore.dismissAdDialog()
                             }
 
                             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                AdmobManager.isOverlayAdShowing = false
+                                AdmobCore.isOverlayAdShowing = false
                                 enableResumeAdsIfNeeded()
                                 InternalAdCache.clearInterstitial(resolvedId)
-                                AdmobManager.dismissAdDialog()
+                                AdmobCore.dismissAdDialog()
                                 interState.liveData.removeObservers(activity)
                                 handler.removeCallbacksAndMessages(null)
                                 adCallback.onAdFailed(adError.message + " \ncause: \n" + adError.cause)
@@ -161,7 +161,7 @@ internal object InterstitialAdManager {
 
                             override fun onAdShowedFullScreenContent() {
                                 handler.removeCallbacksAndMessages(null)
-                                AdmobManager.isOverlayAdShowing = true
+                                AdmobCore.isOverlayAdShowing = true
                                 adCallback.onAdShowed()
                                 Log.d(tag, "onAdShowed")
                                 try {
@@ -187,39 +187,39 @@ internal object InterstitialAdManager {
         }
 
         if (interState.ad == null) {
-            AdmobManager.isOverlayAdShowing = false
+            AdmobCore.isOverlayAdShowing = false
             enableResumeAdsIfNeeded()
             adCallback.onAdFailed("Inter Ad is null. Load inter ad before show!")
             Log.e(tag, "Inter Ad is null. Load inter ad before show!")
             handler.removeCallbacksAndMessages(null)
         } else {
-            AdmobManager.dialogLoading(activity)
+            AdmobCore.dialogLoading(activity)
             Handler(Looper.getMainLooper()).postDelayed({
                 interState.ad?.fullScreenContentCallback = object : FullScreenContentCallback() {
                     override fun onAdDismissedFullScreenContent() {
-                        AdmobManager.isOverlayAdShowing = false
+                        AdmobCore.isOverlayAdShowing = false
                         enableResumeAdsIfNeeded()
                         interState.liveData.removeObservers(activity as LifecycleOwner)
                         InternalAdCache.clearInterstitial(resolvedId)
                         adCallback.onAdClosed()
                         Log.d(tag, "onAdClosed")
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                     }
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                        AdmobManager.isOverlayAdShowing = false
+                        AdmobCore.isOverlayAdShowing = false
                         enableResumeAdsIfNeeded()
                         handler.removeCallbacksAndMessages(null)
                         InternalAdCache.clearInterstitial(resolvedId)
                         interState.liveData.removeObservers(activity as LifecycleOwner)
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                         adCallback.onAdFailed(adError.message + " \ncause:\n" + adError.cause)
                         Log.e(tag, adError.message + " \ncause:\n" + adError.cause)
                     }
 
                     override fun onAdShowedFullScreenContent() {
                         handler.removeCallbacksAndMessages(null)
-                        AdmobManager.isOverlayAdShowing = true
+                        AdmobCore.isOverlayAdShowing = true
                         adCallback.onAdShowed()
                         Log.d(tag, "onAdShowed")
                     }
@@ -235,15 +235,15 @@ internal object InterstitialAdManager {
         adCallback: AdmobManager.LoadAndShowAdCallBack
     ) {
         val tag = "Load and show INTERSTITIAL AD"
-        if (AdmobManager.adRequest == null) {
-            AdmobManager.initAdRequest(AdmobManager.getTimeout())
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
-        if (AdmobManager.isOverlayAdShowing) {
+        if (AdmobCore.isOverlayAdShowing) {
             adCallback.onAdFailed("Other ad is showing!")
             Log.e(tag, "Other ad is showing!")
             return
         }
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallback.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             enableResumeAdsIfNeeded()
@@ -262,13 +262,13 @@ internal object InterstitialAdManager {
             adCallback.onAdFailed("Ad Id is blank!")
             return
         }
-        AdmobManager.isOverlayAdShowing = true
-        AdmobManager.dialogLoading(activity)
+        AdmobCore.isOverlayAdShowing = true
+        AdmobCore.dialogLoading(activity)
 
         InterstitialAd.load(
             activity,
             resolvedId,
-            AdmobManager.adRequest!!,
+            AdmobCore.adRequest!!,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     super.onAdLoaded(interstitialAd)
@@ -285,18 +285,18 @@ internal object InterstitialAdManager {
                         override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                             adCallback.onAdFailed(adError.message + "\nCause\n" + adError.cause)
                             Log.e(tag, adError.message + "\nCause\n" + adError.cause)
-                            AdmobManager.isOverlayAdShowing = false
+                            AdmobCore.isOverlayAdShowing = false
                             enableResumeAdsIfNeeded()
                             InternalAdCache.clearInterstitial(resolvedId)
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.dismissAdDialog()
                         }
 
                         override fun onAdDismissedFullScreenContent() {
                             adCallback.onAdClosed()
                             Log.d(tag, "onAdClosed")
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.dismissAdDialog()
                             InternalAdCache.clearInterstitial(resolvedId)
-                            AdmobManager.isOverlayAdShowing = false
+                            AdmobCore.isOverlayAdShowing = false
                             enableResumeAdsIfNeeded()
                         }
 
@@ -309,7 +309,7 @@ internal object InterstitialAdManager {
                     }
 
                     if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                        AdmobManager.isOverlayAdShowing = true
+                        AdmobCore.isOverlayAdShowing = true
                         adCallback.onAdShowed()
                         Log.d(tag, "onAdShowed")
                         interstitialAd.setOnPaidEventListener { adValue ->
@@ -321,9 +321,9 @@ internal object InterstitialAdManager {
                         }
                         interstitialAd.show(activity)
                     } else {
-                        AdmobManager.isOverlayAdShowing = false
+                        AdmobCore.isOverlayAdShowing = false
                         enableResumeAdsIfNeeded()
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                         adCallback.onAdFailed("Your App is showing on resume ad or inter ad is null!")
                         Log.e(tag, "Your App is showing on resume ad or inter ad is null!")
                     }
@@ -333,10 +333,10 @@ internal object InterstitialAdManager {
                     super.onAdFailedToLoad(loadAdError)
                     InternalAdCache.clearInterstitial(resolvedId)
                     enableResumeAdsIfNeeded()
-                    AdmobManager.isOverlayAdShowing = false
+                    AdmobCore.isOverlayAdShowing = false
                     adCallback.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
                     Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
-                    AdmobManager.dismissAdDialog()
+                    AdmobCore.dismissAdDialog()
                 }
             })
     }
@@ -347,15 +347,15 @@ internal object InterstitialAdManager {
         adCallback: AdmobManager.LoadAndShowAdCallBack
     ) {
         val tag = "Load and show INTERSTITIAL AD"
-        if (AdmobManager.adRequest == null) {
-            AdmobManager.initAdRequest(AdmobManager.getTimeout())
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
-        if (AdmobManager.isOverlayAdShowing) {
+        if (AdmobCore.isOverlayAdShowing) {
             adCallback.onAdFailed("Other ad is showing!")
             Log.e(tag, "Other ad is showing!")
             return
         }
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallback.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             enableResumeAdsIfNeeded()
@@ -374,12 +374,12 @@ internal object InterstitialAdManager {
             adCallback.onAdFailed("Ad Id is blank!")
             return
         }
-        AdmobManager.isOverlayAdShowing = true
+        AdmobCore.isOverlayAdShowing = true
 
         InterstitialAd.load(
             activity,
             resolvedId,
-            AdmobManager.adRequest!!,
+            AdmobCore.adRequest!!,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     super.onAdLoaded(interstitialAd)
@@ -396,18 +396,18 @@ internal object InterstitialAdManager {
                         override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                             adCallback.onAdFailed(adError.message + "\nCause\n" + adError.cause)
                             Log.e(tag, adError.message + "\nCause\n" + adError.cause)
-                            AdmobManager.isOverlayAdShowing = false
+                            AdmobCore.isOverlayAdShowing = false
                             enableResumeAdsIfNeeded()
                             InternalAdCache.clearInterstitial(resolvedId)
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.dismissAdDialog()
                         }
 
                         override fun onAdDismissedFullScreenContent() {
                             adCallback.onAdClosed()
                             Log.d(tag, "onAdClosed")
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.dismissAdDialog()
                             InternalAdCache.clearInterstitial(resolvedId)
-                            AdmobManager.isOverlayAdShowing = false
+                            AdmobCore.isOverlayAdShowing = false
                             enableResumeAdsIfNeeded()
                         }
 
@@ -420,7 +420,7 @@ internal object InterstitialAdManager {
                     }
 
                     if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                        AdmobManager.isOverlayAdShowing = true
+                        AdmobCore.isOverlayAdShowing = true
                         adCallback.onAdShowed()
                         Log.d(tag, "onAdShowed")
                         interstitialAd.setOnPaidEventListener { adValue ->
@@ -432,9 +432,9 @@ internal object InterstitialAdManager {
                         }
                         interstitialAd.show(activity)
                     } else {
-                        AdmobManager.isOverlayAdShowing = false
+                        AdmobCore.isOverlayAdShowing = false
                         enableResumeAdsIfNeeded()
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                         adCallback.onAdFailed("Your App is showing on resume ad or inter ad is null!")
                         Log.e(tag, "Your App is showing on resume ad or inter ad is null!")
                     }
@@ -444,10 +444,10 @@ internal object InterstitialAdManager {
                     super.onAdFailedToLoad(loadAdError)
                     InternalAdCache.clearInterstitial(resolvedId)
                     enableResumeAdsIfNeeded()
-                    AdmobManager.isOverlayAdShowing = false
+                    AdmobCore.isOverlayAdShowing = false
                     adCallback.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
                     Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
-                    AdmobManager.dismissAdDialog()
+                    AdmobCore.dismissAdDialog()
                 }
             })
     }
@@ -459,7 +459,7 @@ internal object InterstitialAdManager {
     ) {
         val tag = "Show INTERSTITIAL AD new"
         if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && mInterstitialAd != null) {
-            AdmobManager.isOverlayAdShowing = true
+            AdmobCore.isOverlayAdShowing = true
             Handler(Looper.getMainLooper()).postDelayed({
                 adcallback.onAdShowed()
                 Log.d(tag, "showInterstitialAdNew")
@@ -473,16 +473,16 @@ internal object InterstitialAdManager {
                 mInterstitialAd.show(activity)
             }, 400)
         } else {
-            AdmobManager.isOverlayAdShowing = false
+            AdmobCore.isOverlayAdShowing = false
             enableResumeAdsIfNeeded()
-            AdmobManager.dismissAdDialog()
+            AdmobCore.dismissAdDialog()
             adcallback.onAdFailed("Your App is showing on resume ad or inter ad is null!")
             Log.e(tag, "Your App is showing on resume ad or inter ad is null!")
         }
     }
 
     private fun resolveInterstitialId(context: Context, requestedId: String): String? {
-        val adId = if (AdmobManager.isTestAd) {
+        val adId = if (AdmobCore.isTestAd) {
             context.getString(R.string.id_test_interstitial_admob)
         } else {
             requestedId
@@ -490,7 +490,7 @@ internal object InterstitialAdManager {
         return adId.takeIf { it.isNotBlank() }
     }
 
-    private fun Context.isNetworkConnected(): Boolean = AdmobManager.run { isNetworkConnected() }
+    private fun Context.isNetworkConnected(): Boolean = AdmobCore.run { isNetworkConnected() }
 
     private fun enableResumeAdsIfNeeded() {
         if (AppResumeAdsManager.getInstance().isInitialized) {

@@ -25,7 +25,7 @@ internal object BannerAdManager {
         adCallBack: AdmobManager.LoadAndShowAdCallBack
     ) {
         val tag = "Load and show BANNER AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             Log.e(tag, "Ads is Disable now!")
             adCallBack.onAdFailed("Ads is Disable now!")
             return
@@ -36,7 +36,7 @@ internal object BannerAdManager {
             return
         }
         val adView = AdView(activity)
-        adView.adUnitId = if (AdmobManager.isTestAd) {
+        adView.adUnitId = if (AdmobCore.isTestAd) {
             activity.getString(R.string.id_test_banner_admob)
         } else {
             idBannerAd
@@ -55,8 +55,8 @@ internal object BannerAdManager {
         viewBannerAd.addView(overlayView, 0)
         viewBannerAd.addView(adView, 1)
 
-        AdmobManager.shimmerFrameLayout = overlayView.findViewById(R.id.shimmerBanner)
-        AdmobManager.shimmerFrameLayout?.startShimmer()
+        AdmobCore.shimmerFrameLayout = overlayView.findViewById(R.id.shimmerBanner)
+        AdmobCore.shimmerFrameLayout?.startShimmer()
 
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
@@ -67,7 +67,7 @@ internal object BannerAdManager {
                         adView.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
+                AdmobCore.shimmerFrameLayout?.stopShimmer()
                 viewBannerAd.removeView(overlayView)
                 adCallBack.onAdLoaded()
                 adCallBack.onAdShowed()
@@ -75,7 +75,7 @@ internal object BannerAdManager {
             }
 
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
+                AdmobCore.shimmerFrameLayout?.stopShimmer()
                 viewBannerAd.removeView(overlayView)
                 adCallBack.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
                 Log.e(tag, adError.message + "\nCause:\n" + adError.cause)
@@ -91,8 +91,8 @@ internal object BannerAdManager {
             override fun onAdOpened() {}
         }
 
-        if (AdmobManager.adRequest != null) {
-            adView.loadAd(AdmobManager.adRequest!!)
+        if (AdmobCore.adRequest != null) {
+            adView.loadAd(AdmobCore.adRequest!!)
         } else {
             Log.d(tag, "Admob is not init now. Check it before load ad!")
             adCallBack.onAdFailed("Admob is not init now. Check it before load ad!")
@@ -107,7 +107,7 @@ internal object BannerAdManager {
         adCallBack: AdmobManager.LoadAndShowAdCallBack
     ) {
         val tag = "Load and show BANNER COLLAPSIBLE AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is Disable now!")
             Log.e(tag, "Ads is Disable now!")
             return
@@ -119,7 +119,7 @@ internal object BannerAdManager {
             return
         }
         val adView = AdView(activity)
-        adView.adUnitId = if (AdmobManager.isTestAd) {
+        adView.adUnitId = if (AdmobCore.isTestAd) {
             activity.getString(R.string.id_test_collapsible_banner_admob)
         } else {
             idBannerCollapAd
@@ -137,8 +137,8 @@ internal object BannerAdManager {
         viewBanner.addView(overlayView, 0)
         viewBanner.addView(adView, 1)
 
-        AdmobManager.shimmerFrameLayout = overlayView.findViewById(R.id.shimmer_view_container)
-        AdmobManager.shimmerFrameLayout?.startShimmer()
+        AdmobCore.shimmerFrameLayout = overlayView.findViewById(R.id.shimmer_view_container)
+        AdmobCore.shimmerFrameLayout?.startShimmer()
 
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
@@ -149,7 +149,7 @@ internal object BannerAdManager {
                         adView.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
+                AdmobCore.shimmerFrameLayout?.stopShimmer()
                 viewBanner.removeView(overlayView)
                 overlayView.destroyDrawingCache()
                 adCallBack.onAdLoaded()
@@ -161,7 +161,7 @@ internal object BannerAdManager {
             }
 
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
+                AdmobCore.shimmerFrameLayout?.stopShimmer()
                 viewBanner.removeView(overlayView)
                 adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
                 Log.e(tag, "onAdFailedToLoad: " + adError.message + "\nCause\n" + adError.cause)
@@ -200,5 +200,5 @@ internal object BannerAdManager {
         )
     }
 
-    private fun Activity.isNetworkConnected(): Boolean = AdmobManager.run { isNetworkConnected() }
+    private fun Activity.isNetworkConnected(): Boolean = AdmobCore.run { isNetworkConnected() }
 }

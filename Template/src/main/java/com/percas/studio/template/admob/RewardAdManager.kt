@@ -24,7 +24,7 @@ internal object RewardAdManager {
         adCallback: AdmobManager.LoadAndShowRewardAdCallBack
     ) {
         val tag = "Load and show REWARD AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallback.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -35,13 +35,13 @@ internal object RewardAdManager {
             Log.e(tag, "No Internet!")
             return
         }
-        if (AdmobManager.isOverlayAdShowing) {
+        if (AdmobCore.isOverlayAdShowing) {
             adCallback.onAdFailed("Other ad is showing!")
             Log.e(tag, "Other ad is showing!")
             return
         }
-        if (AdmobManager.adRequest == null) {
-            AdmobManager.initAdRequest(AdmobManager.getTimeout())
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
 
         val idReward = resolveRewardId(activity, admobId)
@@ -51,17 +51,17 @@ internal object RewardAdManager {
             return
         }
 
-        AdmobManager.dialogLoading(activity)
-        AdmobManager.isOverlayAdShowing = true
+        AdmobCore.dialogLoading(activity)
+        AdmobCore.isOverlayAdShowing = true
         disableResumeAdsIfNeeded()
 
-        RewardedAd.load(activity, idReward, AdmobManager.adRequest!!, object : RewardedAdLoadCallback() {
+        RewardedAd.load(activity, idReward, AdmobCore.adRequest!!, object : RewardedAdLoadCallback() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                 adCallback.onAdFailed(loadAdError.message + "\nCause:\n" + loadAdError.cause)
                 Log.e(tag, loadAdError.message + "\nCause:\n" + loadAdError.cause)
-                AdmobManager.dismissAdDialog()
+                AdmobCore.dismissAdDialog()
                 enableResumeAdsIfNeeded()
-                AdmobManager.isOverlayAdShowing = false
+                AdmobCore.isOverlayAdShowing = false
             }
 
             override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -77,25 +77,25 @@ internal object RewardAdManager {
 
                 rewardedAd.fullScreenContentCallback = object : FullScreenContentCallback() {
                     override fun onAdShowedFullScreenContent() {
-                        AdmobManager.isOverlayAdShowing = true
+                        AdmobCore.isOverlayAdShowing = true
                         adCallback.onAdShowed()
                         Log.d(tag, "onAdShowed")
                         disableResumeAdsIfNeeded()
                     }
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                        AdmobManager.isOverlayAdShowing = false
+                        AdmobCore.isOverlayAdShowing = false
                         adCallback.onAdFailed(adError.message + "\nCause:n\n" + adError.cause)
                         Log.e(tag, adError.message + "\nCause:n\n" + adError.cause)
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                         enableResumeAdsIfNeeded()
                     }
 
                     override fun onAdDismissedFullScreenContent() {
-                        AdmobManager.isOverlayAdShowing = false
+                        AdmobCore.isOverlayAdShowing = false
                         adCallback.onAdClosed()
                         Log.d(tag, "onAdClosed")
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                         enableResumeAdsIfNeeded()
                     }
                 }
@@ -105,12 +105,12 @@ internal object RewardAdManager {
                     rewardedAd.show(activity) {
                         adCallback.onAdEarned()
                         Log.d(tag, "onAdEarned")
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                     }
-                    AdmobManager.isOverlayAdShowing = true
+                    AdmobCore.isOverlayAdShowing = true
                 } else {
-                    AdmobManager.dismissAdDialog()
-                    AdmobManager.isOverlayAdShowing = false
+                    AdmobCore.dismissAdDialog()
+                    AdmobCore.isOverlayAdShowing = false
                     enableResumeAdsIfNeeded()
                     adCallback.onAdFailed("Your App is showing on resume ad!")
                     Log.e(tag, "Your App is showing on resume ad!")
@@ -125,7 +125,7 @@ internal object RewardAdManager {
         adLoadCallback: AdmobManager.LoadAdCallBack
     ) {
         val tag = "Load INTERSTITIAL REWARD AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adLoadCallback.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -150,14 +150,14 @@ internal object RewardAdManager {
         }
         rewardState.isLoading = true
 
-        if (AdmobManager.adRequest == null) {
-            AdmobManager.initAdRequest(AdmobManager.getTimeout())
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
 
         RewardedInterstitialAd.load(
             context,
             resolvedId,
-            AdmobManager.adRequest!!,
+            AdmobCore.adRequest!!,
             object : RewardedInterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialRewardAd: RewardedInterstitialAd) {
                     rewardState.ad = interstitialRewardAd
@@ -182,14 +182,14 @@ internal object RewardAdManager {
         idAd: String,
         adCallback: AdmobManager.ShowRewardAdCallBack
     ) {
-        if (AdmobManager.adRequest == null) {
-            AdmobManager.initAdRequest(AdmobManager.getTimeout())
+        if (AdmobCore.adRequest == null) {
+            AdmobCore.initAdRequest(AdmobCore.getTimeout())
         }
-        if (AdmobManager.isOverlayAdShowing) {
+        if (AdmobCore.isOverlayAdShowing) {
             adCallback.onAdFailed("Other ad is showing")
             return
         }
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallback.onAdFailed("Ads is DISABLE now")
             enableResumeAdsIfNeeded()
             return
@@ -208,8 +208,8 @@ internal object RewardAdManager {
         }
         val rewardState = InternalAdCache.rewardedInterstitial(resolvedId)
 
-        AdmobManager.isOverlayAdShowing = true
-        AdmobManager.dialogLoading(activity)
+        AdmobCore.isOverlayAdShowing = true
+        AdmobCore.dialogLoading(activity)
 
         if (rewardState.isLoading) {
             rewardState.liveData.observe(activity as LifecycleOwner) { reward: RewardedInterstitialAd? ->
@@ -227,8 +227,8 @@ internal object RewardAdManager {
                             InternalAdCache.clearRewardedInterstitial(resolvedId)
                             rewardState.liveData.removeObservers(activity)
                             enableResumeAdsIfNeeded()
-                            AdmobManager.isOverlayAdShowing = false
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.isOverlayAdShowing = false
+                            AdmobCore.dismissAdDialog()
                             adCallback.onAdClosed()
                         }
 
@@ -236,15 +236,15 @@ internal object RewardAdManager {
                             InternalAdCache.clearRewardedInterstitial(resolvedId)
                             rewardState.liveData.removeObservers(activity)
                             enableResumeAdsIfNeeded()
-                            AdmobManager.isOverlayAdShowing = false
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.isOverlayAdShowing = false
+                            AdmobCore.dismissAdDialog()
                             adCallback.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
                         }
 
                         override fun onAdShowedFullScreenContent() {
-                            AdmobManager.isOverlayAdShowing = true
+                            AdmobCore.isOverlayAdShowing = true
                             adCallback.onAdShowed()
-                            AdmobManager.dismissAdDialog()
+                            AdmobCore.dismissAdDialog()
                         }
                     }
                     it.show(activity) {
@@ -266,8 +266,8 @@ internal object RewardAdManager {
                         InternalAdCache.clearRewardedInterstitial(resolvedId)
                         rewardState.liveData.removeObservers(activity as LifecycleOwner)
                         enableResumeAdsIfNeeded()
-                        AdmobManager.isOverlayAdShowing = false
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.isOverlayAdShowing = false
+                        AdmobCore.dismissAdDialog()
                         adCallback.onAdClosed()
                     }
 
@@ -275,29 +275,29 @@ internal object RewardAdManager {
                         InternalAdCache.clearRewardedInterstitial(resolvedId)
                         rewardState.liveData.removeObservers(activity as LifecycleOwner)
                         enableResumeAdsIfNeeded()
-                        AdmobManager.isOverlayAdShowing = false
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.isOverlayAdShowing = false
+                        AdmobCore.dismissAdDialog()
                         adCallback.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
                     }
 
                     override fun onAdShowedFullScreenContent() {
-                        AdmobManager.isOverlayAdShowing = true
+                        AdmobCore.isOverlayAdShowing = true
                         adCallback.onAdShowed()
-                        AdmobManager.dismissAdDialog()
+                        AdmobCore.dismissAdDialog()
                     }
                 }
                 rewardState.ad?.show(activity) { adCallback.onAdEarned() }
             } else {
-                AdmobManager.isOverlayAdShowing = false
+                AdmobCore.isOverlayAdShowing = false
                 adCallback.onAdFailed("Ad is null. Load Inter Reward before show it!")
-                AdmobManager.dismissAdDialog()
+                AdmobCore.dismissAdDialog()
                 enableResumeAdsIfNeeded()
             }
         }
     }
 
     private fun resolveRewardId(context: Context, requestedId: String): String? {
-        val adId = if (AdmobManager.isTestAd) {
+        val adId = if (AdmobCore.isTestAd) {
             context.getString(R.string.id_test_reward_admob)
         } else {
             requestedId
@@ -306,7 +306,7 @@ internal object RewardAdManager {
     }
 
     private fun resolveRewardInterstitialId(context: Context, requestedId: String): String? {
-        val adId = if (AdmobManager.isTestAd) {
+        val adId = if (AdmobCore.isTestAd) {
             context.getString(R.string.id_test_reward_inter_admob)
         } else {
             requestedId
@@ -314,7 +314,7 @@ internal object RewardAdManager {
         return adId.takeIf { it.isNotBlank() }
     }
 
-    private fun Context.isNetworkConnected(): Boolean = AdmobManager.run { isNetworkConnected() }
+    private fun Context.isNetworkConnected(): Boolean = AdmobCore.run { isNetworkConnected() }
 
     private fun disableResumeAdsIfNeeded() {
         if (AppResumeAdsManager.getInstance().isInitialized) {

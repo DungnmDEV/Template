@@ -39,7 +39,7 @@ internal object NativeAdManager {
         adCallBack: AdmobManager.LoadAdCallBack
     ) {
         val tag = "Load NATIVE AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is Disable now!")
             Log.e(tag, "Ads is Disable now!")
             return
@@ -106,8 +106,8 @@ internal object NativeAdManager {
             .withNativeAdOptions(NativeAdOptions.Builder().build())
             .build()
 
-        if (AdmobManager.adRequest != null) {
-            adLoader.loadAd(AdmobManager.adRequest!!)
+        if (AdmobCore.adRequest != null) {
+            adLoader.loadAd(AdmobCore.adRequest!!)
         } else {
             state.isLoading = false
             adCallBack.onAdFailed("Admob is not init now. Check it before load ad!")
@@ -123,7 +123,7 @@ internal object NativeAdManager {
         adCallBack: AdmobManager.ShowAdCallBack
     ) {
         val tag = "Show NATIVE AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -142,7 +142,7 @@ internal object NativeAdManager {
         }
 
         val state = nativeAds.getOrPut(resolvedId) { NativeAdState() }
-        AdmobManager.shimmerFrameLayout?.stopShimmer()
+        AdmobCore.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
 
         if (!state.isLoading) {
@@ -170,7 +170,7 @@ internal object NativeAdManager {
         adCallBack: AdmobManager.LoadAndShowAdCallBack
     ) {
         val tag = "Load and show NATIVE AD"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is DISABLE now")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -192,10 +192,10 @@ internal object NativeAdManager {
         val tagView = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(tagView, 0)
 
-        if (AdmobManager.shimmerFrameLayout == null) {
-            AdmobManager.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
+        if (AdmobCore.shimmerFrameLayout == null) {
+            AdmobCore.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
         }
-        AdmobManager.shimmerFrameLayout?.startShimmer()
+        AdmobCore.shimmerFrameLayout?.startShimmer()
 
         val adLoader = AdLoader.Builder(activity, resolvedId)
             .forNativeAd { nativeAd ->
@@ -214,7 +214,7 @@ internal object NativeAdManager {
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    AdmobManager.shimmerFrameLayout?.stopShimmer()
+                    AdmobCore.shimmerFrameLayout?.stopShimmer()
                     viewNativeAd.removeAllViews()
                     adCallBack.onAdFailed(adError.message + "\nError Code Ads:\n" + adError.cause)
                     Log.e(tag, adError.message + "\nError Code Ads:\n" + adError.cause)
@@ -229,8 +229,8 @@ internal object NativeAdManager {
             .withNativeAdOptions(NativeAdOptions.Builder().build())
             .build()
 
-        if (AdmobManager.adRequest != null) {
-            adLoader.loadAd(AdmobManager.adRequest!!)
+        if (AdmobCore.adRequest != null) {
+            adLoader.loadAd(AdmobCore.adRequest!!)
         } else {
             adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
             Log.e(tag, "Admob is not init now. Check it before load ads!")
@@ -246,7 +246,7 @@ internal object NativeAdManager {
         adCallBack: AdmobManager.LoadAndShowAdCallBack
     ) {
         val tag = "Load and show NATIVE FULL SCREEN"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is DISABLE now!")
             Log.d(tag, "Ads is DISABLE now!")
             return
@@ -267,8 +267,8 @@ internal object NativeAdManager {
         viewNativeAd.removeAllViews()
         val tagView = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(tagView, 0)
-        AdmobManager.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
-        AdmobManager.shimmerFrameLayout?.startShimmer()
+        AdmobCore.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
+        AdmobCore.shimmerFrameLayout?.startShimmer()
 
         val builder = AdLoader.Builder(activity, resolvedId)
         val videoOptions =
@@ -296,13 +296,13 @@ internal object NativeAdManager {
         }
         builder.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
+                AdmobCore.shimmerFrameLayout?.stopShimmer()
                 adCallBack.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
                 Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
             }
         })
-        if (AdmobManager.adRequest != null) {
-            builder.build().loadAd(AdmobManager.adRequest!!)
+        if (AdmobCore.adRequest != null) {
+            builder.build().loadAd(AdmobCore.adRequest!!)
         } else {
             adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
             Log.e(tag, "Admob is not init now. Check it before load ads!")
@@ -316,7 +316,7 @@ internal object NativeAdManager {
         adCallBack: AdmobManager.LoadAdCallBack
     ) {
         val tag = "Load NATIVE AD FULL SCREEN"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -385,8 +385,8 @@ internal object NativeAdManager {
                 adCallBack.onAdClicked()
             }
         })
-        if (AdmobManager.adRequest != null) {
-            adLoader.build().loadAd(AdmobManager.adRequest!!)
+        if (AdmobCore.adRequest != null) {
+            adLoader.build().loadAd(AdmobCore.adRequest!!)
         } else {
             state.isLoading = false
             adCallBack.onAdFailed("Admob is not init now. Check it before load ads!")
@@ -402,7 +402,7 @@ internal object NativeAdManager {
         adCallBack: AdmobManager.ShowAdCallBack
     ) {
         val tag = "Show NATIVE AD FULL SCREEN"
-        if (!AdmobManager.isEnableAd) {
+        if (!AdmobCore.isEnableAd) {
             adCallBack.onAdFailed("Ads is DISABLE now!")
             Log.e(tag, "Ads is DISABLE now!")
             return
@@ -421,7 +421,7 @@ internal object NativeAdManager {
         }
 
         val state = fullscreenNativeAds.getOrPut(resolvedId) { NativeAdState() }
-        AdmobManager.shimmerFrameLayout?.stopShimmer()
+        AdmobCore.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
 
         if (!state.isLoading) {
@@ -452,11 +452,11 @@ internal object NativeAdManager {
         val overlayLoading = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(overlayLoading, 0)
 
-        if (AdmobManager.shimmerFrameLayout == null) {
-            AdmobManager.shimmerFrameLayout = overlayLoading.findViewById(R.id.shimmer_view_container)
+        if (AdmobCore.shimmerFrameLayout == null) {
+            AdmobCore.shimmerFrameLayout = overlayLoading.findViewById(R.id.shimmer_view_container)
         }
 
-        AdmobManager.shimmerFrameLayout?.startShimmer()
+        AdmobCore.shimmerFrameLayout?.startShimmer()
         state.liveData.observe(activity as LifecycleOwner) { nativeAd: NativeAd? ->
             if (nativeAd != null) {
                 nativeAd.setOnPaidEventListener {
@@ -471,7 +471,7 @@ internal object NativeAdManager {
                 Log.d(tag, "Ad Showed")
                 state.liveData.removeObservers(activity as LifecycleOwner)
             } else {
-                AdmobManager.shimmerFrameLayout?.stopShimmer()
+                AdmobCore.shimmerFrameLayout?.stopShimmer()
                 adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd")
                 Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
                 state.liveData.removeObservers(activity as LifecycleOwner)
@@ -488,7 +488,7 @@ internal object NativeAdManager {
         val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
         renderer.bind(binding, nativeAd)
         val adView = renderer.root(binding)
-        AdmobManager.shimmerFrameLayout?.stopShimmer()
+        AdmobCore.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
         viewNativeAd.addView(adView)
     }
@@ -498,7 +498,7 @@ internal object NativeAdManager {
         requestedId: String,
         isFullscreen: Boolean
     ): String? {
-        val adId = if (AdmobManager.isTestAd) {
+        val adId = if (AdmobCore.isTestAd) {
             if (isFullscreen) {
                 context.getString(R.string.id_test_native_admob_fullscrren)
             } else {
@@ -522,8 +522,5 @@ internal object NativeAdManager {
         return activity.layoutInflater.inflate(loadingLayout, null, false)
     }
 
-    private fun Context.isNetworkConnected(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        return cm?.activeNetworkInfo?.isConnected == true
-    }
+    private fun Context.isNetworkConnected(): Boolean = AdmobCore.run { isNetworkConnected() }
 }

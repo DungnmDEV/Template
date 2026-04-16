@@ -1,21 +1,43 @@
 # Template Library
 [![](https://jitpack.io/v/DungnmPercas/Template.svg)](https://jitpack.io/#DungnmPercas/Template)
 
-Android AdMob library for app teams that need:
+Android AdMob library for company apps.
+
+Current scope:
 
 1. AdMob initialization
 2. Banner ads
-3. Native ads
+3. Native ads with `Renderer + ViewBinding`
 4. Interstitial ads
-5. Reward and rewarded interstitial ads
-6. App open ads
-7. App resume ads
-8. Google UMP consent flow
+5. Rewarded ads
+6. Rewarded interstitial ads
+7. App open ads
+8. App resume ads
+9. Google UMP consent flow
 
 This repository contains:
 
-1. `Template`: the reusable ads library
-2. `app`: a sample app that demonstrates integration
+1. `Template`: reusable ads library
+2. `app`: sample integration app
+
+## Phase Status
+
+This phase is complete with these architectural changes in place:
+
+1. Public ad APIs no longer expose ad holders
+2. Internal ad state and cache are managed inside the library
+3. Native ads use a `NativeAdRenderer<T : ViewBinding>` contract
+4. The old monolithic `AdmobManager` has been split into focused internal managers
+5. Shared runtime state has been moved to `AdmobCore`
+
+Current internal structure:
+
+1. `AdmobManager`: public facade and callback contracts
+2. `AdmobCore`: shared state, request config, timeout, dialog helpers, network helper
+3. `BannerAdManager`
+4. `NativeAdManager`
+5. `InterstitialAdManager`
+6. `RewardAdManager`
 
 ## Requirements
 
@@ -49,7 +71,7 @@ dependencies {
 
 Use the latest library version published on JitPack.
 
-## AndroidManifest setup
+## AndroidManifest Setup
 
 Add your AdMob application ID in the host app manifest:
 
@@ -61,15 +83,15 @@ Add your AdMob application ID in the host app manifest:
 </application>
 ```
 
-For testing, Google provides this sample app ID:
+Google test app ID:
 
 ```xml
 ca-app-pub-3940256099942544~3347511713
 ```
 
-## Initialize the library
+## Initialize The Library
 
-Create an `Application` class and initialize AdMob once at app startup.
+Create an `Application` class and initialize AdMob once.
 
 ```kotlin
 class MyApplication : Application() {
@@ -86,13 +108,54 @@ class MyApplication : Application() {
 }
 ```
 
-Then register it in the manifest:
+Register it in the manifest:
 
 ```xml
 <application
     android:name=".MyApplication"
     ... />
 ```
+
+## Test Mode And Production Mode
+
+When calling `AdmobManager.initAdmob(...)`:
+
+1. `isTestAd = true`
+   The library uses Google test units where supported.
+2. `isTestAd = false`
+   You must pass real ad unit IDs.
+
+Example:
+
+```kotlin
+AdmobManager.initAdmob(
+    context = this,
+    timeOut = 10_000,
+    isTestAd = false,
+    isEnableAd = true,
+)
+```
+
+## Consent With UMP
+
+Use `CMP_Manager` before requesting ads in regions where consent is required.
+
+```kotlin
+val cmpManager = CMP_Manager(this)
+
+cmpManager.gatherConsent { error ->
+    if (error == null && cmpManager.canRequestAds) {
+        // Safe point to request ads.
+    }
+}
+```
+
+Useful helpers:
+
+1. `canRequestAds`
+2. `isPrivacyOptionsRequired`
+3. `loadAndShowConsent(...)`
+4. `checkEnableShowCMP(...)`
 
 ## App Resume Ads
 
@@ -115,15 +178,9 @@ class MyApplication : Application() {
 }
 ```
 
-Notes:
-
-1. In test mode, the library will use Google's test app-open unit.
-2. In production, pass your real app resume ad unit ID.
-3. Use `timeWaitToShow` to avoid showing resume ads too frequently.
-
 ## App Open Ads
 
-Use `AppOpenAdsManager` when you want to show an app open ad explicitly, for example on splash.
+Use `AppOpenAdsManager` when you want to show an app open ad explicitly, such as on splash.
 
 ```kotlin
 val appOpenAdsManager = AppOpenAdsManager(
@@ -141,34 +198,12 @@ val appOpenAdsManager = AppOpenAdsManager(
             finish()
         }
 
-        override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {
-        }
+        override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {}
     }
 )
 
 appOpenAdsManager.loadAndShowAoA()
 ```
-
-## Consent With UMP
-
-Use `CMP_Manager` to request consent before showing ads in regions where consent is required.
-
-```kotlin
-val cmpManager = CMP_Manager(this)
-
-cmpManager.gatherConsent { error ->
-    if (error == null && cmpManager.canRequestAds) {
-        // Safe point to request ads.
-    }
-}
-```
-
-Useful helpers:
-
-1. `canRequestAds`
-2. `isPrivacyOptionsRequired`
-3. `loadAndShowConsent(...)`
-4. `checkEnableShowCMP(...)`
 
 ## Banner Ads
 
@@ -181,19 +216,10 @@ AdmobManager.loadAndShowBannerAd(
     viewBannerAd = binding.bannerContainer,
     adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
         override fun onAdLoaded() {}
-
-        override fun onAdShowed() {
-            binding.bannerContainer.visibility = View.VISIBLE
-        }
-
-        override fun onAdFailed(error: String) {
-            binding.bannerContainer.visibility = View.GONE
-        }
-
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
         override fun onAdClosed() {}
-
         override fun onAdClicked() {}
-
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
 )
@@ -220,12 +246,12 @@ AdmobManager.loadAndShowBannerCollapsibleAd(
 
 ## Native Ads
 
-Native ads now use a `Renderer + ViewBinding` contract.
+Native ads use a `Renderer + ViewBinding` contract.
 
 The library is responsible for:
 
 1. loading native ads
-2. caching native ads
+2. caching native ads internally
 3. showing loading placeholders
 4. lifecycle and callbacks
 
@@ -251,8 +277,6 @@ AdmobManager.loadNativeAd(
 ```
 
 ### 2. Create a renderer
-
-Example renderer:
 
 ```kotlin
 class MediumNativeAdRenderer : NativeAdRenderer<AdUnifiedMediumBinding> {
@@ -316,16 +340,9 @@ AdmobManager.showNativeAd(
     viewNativeAd = binding.nativeContainer,
     renderer = MediumNativeAdRenderer(),
     adCallBack = object : AdmobManager.ShowAdCallBack {
-        override fun onAdShowed() {
-            binding.nativeContainer.visibility = View.VISIBLE
-        }
-
-        override fun onAdFailed(error: String) {
-            binding.nativeContainer.visibility = View.GONE
-        }
-
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
         override fun onAdClosed() {}
-
         override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
     }
 )
@@ -515,43 +532,25 @@ Use this callback to:
 2. forward data to analytics
 3. post ad revenue to MMPs
 
-## Test Mode And Production Mode
-
-When calling `AdmobManager.initAdmob(...)`:
-
-1. `isTestAd = true`
-   - library uses Google test units where supported
-2. `isTestAd = false`
-   - you must pass real ad unit IDs
-
-Example:
-
-```kotlin
-AdmobManager.initAdmob(
-    context = this,
-    timeOut = 10_000,
-    isTestAd = false,
-    isEnableAd = true,
-)
-```
-
-## Current Native Ad API Summary
+## Native API Summary
 
 Native ads no longer use:
 
-1. `layoutNativeFormat: Int`
-2. `isNativeMedium: Boolean`
-3. hardcoded `findViewById(...)` contract inside the library
+1. holder objects in the public API
+2. `layoutNativeFormat: Int`
+3. `isNativeMedium: Boolean`
+4. hardcoded `findViewById(...)` contracts inside the public integration surface
 
-They now use:
+Native ads now use:
 
-1. `NativeAdRenderer<T : ViewBinding>`
-2. host-owned layout and binding logic
-3. library-owned loading and ad lifecycle logic
+1. `idAd: String`
+2. `NativeAdRenderer<T : ViewBinding>`
+3. host-owned layout and binding logic
+4. library-owned internal cache and lifecycle logic
 
 ## Sample App
 
-The `app` module in this repository contains working examples for:
+The `app` module contains working examples for:
 
 1. banner ads
 2. native ads with custom renderers
@@ -561,4 +560,4 @@ The `app` module in this repository contains working examples for:
 6. app resume ads
 7. consent flow
 
-Use it as the reference implementation for integration.
+Use it as the reference implementation for this phase.
