@@ -12,13 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.example.databinding.ActivityMainBinding
-import com.percas.studio.template.ViewControl.gone
-import com.percas.studio.template.ViewControl.visible
 import com.percas.studio.template.admob.AdmobManager
 import com.percas.studio.template.model.InterAdHolder
 import com.percas.studio.template.model.NativeAdHolder
 import com.percas.studio.template.model.RewardInterAdHolder
-import com.percas.studio.template.rate.RateApp
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,32 +31,32 @@ class MainActivity : AppCompatActivity() {
         binding.btnLoadAndShowreward.isSelected = true
         binding.btnLoadandshowinter.isSelected = true
 
-        binding.flBanner.visible()
-        binding.line.visible()
+        binding.flBanner.visibility = View.VISIBLE
+        binding.line.visibility = View.VISIBLE
         loadAndShowBannerCollapsibleAd(this, "", true, binding.flBanner, binding.line)
 
 
 
         binding.btnBanner.setOnClickListener {
-            binding.flNativeMedium.gone()
-            binding.flNativeSmall.gone()
-            binding.flBanner.visible()
-            binding.line.visible()
+            binding.flNativeMedium.visibility = View.GONE
+            binding.flNativeSmall.visibility = View.GONE
+            binding.flBanner.visibility = View.VISIBLE
+            binding.line.visibility = View.VISIBLE
             loadAndShowBanner(this, "", binding.flBanner, binding.line)
         }
 
         binding.btnLoadandshowCollap.setOnClickListener {
-            binding.flNativeMedium.gone()
-            binding.flNativeSmall.gone()
-            binding.flBanner.visible()
-            binding.line.visible()
+            binding.flNativeMedium.visibility = View.GONE
+            binding.flNativeSmall.visibility = View.GONE
+            binding.flBanner.visibility = View.VISIBLE
+            binding.line.visibility = View.VISIBLE
             loadAndShowBannerCollapsibleAd(this, "", true, binding.flBanner, binding.line)
         }
 
         binding.btnNativeMedium.setOnClickListener {
-            binding.line.gone()
-            binding.flBanner.gone()
-            binding.flNativeSmall.gone()
+            binding.line.visibility = View.GONE
+            binding.flBanner.visibility = View.GONE
+            binding.flNativeSmall.visibility = View.GONE
             showNativeAd(
                 this,
                 Ads.nativeHolder,
@@ -69,9 +66,9 @@ class MainActivity : AppCompatActivity() {
             )
         }
         binding.btnNativeSmall.setOnClickListener {
-            binding.line.gone()
-            binding.flBanner.gone()
-            binding.flNativeMedium.gone()
+            binding.line.visibility = View.GONE
+            binding.flBanner.visibility = View.GONE
+            binding.flNativeMedium.visibility = View.GONE
             showNativeAd(
                 this,
                 Ads.nativeHolder,
@@ -82,10 +79,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnLoadandshow.setOnClickListener {
-            binding.line.gone()
-            binding.flBanner.gone()
-            binding.flNativeSmall.gone()
-            binding.flNativeMedium.visible()
+            binding.line.visibility = View.GONE
+            binding.flBanner.visibility = View.GONE
+            binding.flNativeSmall.visibility = View.GONE
+            binding.flNativeMedium.visibility = View.VISIBLE
             loadAndShowNativeAds(
                 this,
                 Ads.nativeHolder3,
@@ -155,25 +152,14 @@ class MainActivity : AppCompatActivity() {
         binding.btnShowInterReward.setOnClickListener {
             showRewardInterAd(this, Ads.interRewardHolder)
         }
-        binding.btnRate.setOnClickListener {
-
-//                .setFlags(
-//                    Intent.FLAG_ACTIVITY_NEW_TASK
-//                            or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//                            or Intent.FLAG_ACTIVITY_SINGLE_TOP
-//                            or Intent.FLAG_ACTIVITY_CLEAR_TOP
-//                )
-//            startActivity(intent)
-            showRate(this)
-        }
         binding.btnShowbanner.setOnClickListener {
             isshow = !isshow
             if (isshow) {
-                binding.flBanner.visible()
-                binding.line.visible()
+                binding.flBanner.visibility = View.VISIBLE
+                binding.line.visibility = View.VISIBLE
             } else {
-                binding.flBanner.gone()
-                binding.line.gone()
+                binding.flBanner.visibility = View.GONE
+                binding.line.visibility = View.GONE
             }
         }
 
@@ -193,13 +179,13 @@ class MainActivity : AppCompatActivity() {
                 override fun onAdLoaded() {}
 
                 override fun onAdShowed() {
-                    viewBannerAd.visible()
-                    viewLine.visible()
+                    viewBannerAd.visibility = View.VISIBLE
+                    viewLine.visibility = View.VISIBLE
                 }
 
                 override fun onAdFailed(error: String) {
-                    viewBannerAd.gone()
-                    viewLine.gone()
+                    viewBannerAd.visibility = View.GONE
+                    viewLine.visibility = View.GONE
                 }
 
                 override fun onAdClosed() {}
@@ -232,8 +218,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onAdFailed(error: String) {
-                    viewBannerCollapsibleAd.gone()
-                    viewLine.gone()
+                    viewBannerCollapsibleAd.visibility = View.GONE
+                    viewLine.visibility = View.GONE
                 }
 
                 override fun onAdClosed() {
@@ -266,11 +252,11 @@ class MainActivity : AppCompatActivity() {
             isNativeAdMedium,
             object : AdmobManager.ShowAdCallBack {
                 override fun onAdShowed() {
-                    viewNativeAd.visible()
+                    viewNativeAd.visibility = View.VISIBLE
                 }
 
                 override fun onAdFailed(error: String) {
-                    viewNativeAd.gone()
+                    viewNativeAd.visibility = View.GONE
                 }
 
                 override fun onAdClosed() {
@@ -307,7 +293,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onAdFailed(error: String) {
-                    viewNativeAd.gone()
+                    viewNativeAd.visibility = View.GONE
                 }
 
                 override fun onAdClosed() {
@@ -338,14 +324,14 @@ class MainActivity : AppCompatActivity() {
             layoutNativeAdFormat,
             object : AdmobManager.ShowAdCallBack {
                 override fun onAdShowed() {
-                    viewNativeAd.visible()
+                    viewNativeAd.visibility = View.VISIBLE
                     Handler(Looper.getMainLooper()).postDelayed({
-                        viewNativeAd.gone()
+                        viewNativeAd.visibility = View.GONE
                     }, 10000)
                 }
 
                 override fun onAdFailed(error: String) {
-                    viewNativeAd.gone()
+                    viewNativeAd.visibility = View.GONE
                 }
 
                 override fun onAdClosed() {
@@ -378,14 +364,14 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onAdShowed() {
-                    viewNativeAd.visible()
+                    viewNativeAd.visibility = View.VISIBLE
                     Handler(Looper.getMainLooper()).postDelayed({
-                        viewNativeAd.gone()
+                        viewNativeAd.visibility = View.GONE
                     }, 10000)
                 }
 
                 override fun onAdFailed(error: String) {
-                    viewNativeAd.gone()
+                    viewNativeAd.visibility = View.GONE
                 }
 
                 override fun onAdClosed() {
@@ -507,33 +493,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
-    }
-
-    fun showRate(activity: Activity) {
-        val rateDialog = RateApp(activity, object : RateApp.RateDialogCallback {
-            override fun onShowRateDialog() {
-
-            }
-
-            override fun onDismissRateDialog() {
-            }
-
-            override fun onRateButtonClicked(numberStart: Int) {
-            }
-
-            override fun onMaybeLaterClicked() {
-            }
-
-            override fun onError(error: String) {
-
-            }
-
-        })
-        rateDialog.setPackageName(packageName)
-
-        rateDialog.setLogoApp(R.drawable.ic_setting)
-
-        rateDialog.showDialog()
     }
 
 }
