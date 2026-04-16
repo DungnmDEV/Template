@@ -8,10 +8,26 @@ import android.net.ConnectivityManager
 import com.google.android.gms.ads.AdRequest
 
 internal object AdmobCore {
+    enum class ConsentStatus {
+        UNKNOWN,
+        PENDING,
+        GRANTED,
+        DENIED,
+        ERROR,
+    }
+
     var isEnableAd = false
     var isOverlayAdShowing = false
     var isTestAd = true
     var adRequest: AdRequest? = null
+
+    @Volatile
+    var consentStatus: ConsentStatus = ConsentStatus.UNKNOWN
+        private set
+
+    @Volatile
+    var consentMessage: String = "Consent has not been initialized"
+        private set
 
     private var timeOut = 10000
 
@@ -26,6 +42,28 @@ internal object AdmobCore {
     }
 
     fun getTimeout(): Int = timeOut
+
+    fun markConsentPending() {
+        consentStatus = ConsentStatus.PENDING
+        consentMessage = "Consent is being collected"
+    }
+
+    fun markConsentGranted() {
+        consentStatus = ConsentStatus.GRANTED
+        consentMessage = "Consent granted"
+    }
+
+    fun markConsentDenied(message: String) {
+        consentStatus = ConsentStatus.DENIED
+        consentMessage = message
+    }
+
+    fun markConsentError(message: String) {
+        consentStatus = ConsentStatus.ERROR
+        consentMessage = message
+    }
+
+    fun canRequestAdsByConsent(): Boolean = consentStatus == ConsentStatus.GRANTED
 
     fun initAdRequest(timeOut: Int) {
         adRequest = AdRequest.Builder()

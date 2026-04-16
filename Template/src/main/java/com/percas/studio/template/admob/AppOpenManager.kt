@@ -64,6 +64,10 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
             listener.onAdFail(AdErrorInfo(AdErrorCode.ADS_DISABLED, "Ads is DISABLE now"))
             return
         }
+        if (!AdmobCore.canRequestAdsByConsent()) {
+            listener.onAdFail(consentError())
+            return
+        }
         if (AdmobCore.isOverlayAdShowing || isResumeShowing || isStartupShowing) {
             listener.onAdFail(AdErrorInfo(AdErrorCode.ALREADY_SHOWING, "Other ad is showing"))
             return
@@ -219,6 +223,7 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
     private fun maybeLoadResumeAd() {
         val application = resumeApplication ?: return
         if (resumeAdUnitId.isBlank()) return
+        if (!AdmobCore.canRequestAdsByConsent()) return
         if (isResumeLoading || isResumeAdAvailable()) return
 
         isResumeLoading = true
@@ -245,6 +250,7 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
         if (!resumeInitialized) return
         if (!resumeEnabled) return
         if (!AdmobCore.isEnableAd) return
+        if (!AdmobCore.canRequestAdsByConsent()) return
         if (AdmobCore.isOverlayAdShowing || isStartupShowing || isResumeShowing) return
         if (resumeAdUnitId.isBlank()) return
         if (System.currentTimeMillis() - lastTimeShowAd < timeWaitToShow) return
@@ -325,6 +331,15 @@ object AppOpenManager : Application.ActivityLifecycleCallbacks, DefaultLifecycle
             }
         } catch (_: Exception) {
         }
+    }
+
+    private fun consentError(): AdErrorInfo {
+        val code = if (AdmobCore.consentStatus == AdmobCore.ConsentStatus.ERROR) {
+            AdErrorCode.CONSENT_FLOW_ERROR
+        } else {
+            AdErrorCode.CONSENT_REQUIRED
+        }
+        return AdErrorInfo(code, AdmobCore.consentMessage)
     }
 
     interface AppOpenAdListener {

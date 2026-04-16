@@ -142,13 +142,13 @@ AdmobManager.initAdmob(
 
 ## Consent With UMP
 
-Use `CMP_Manager` before requesting ads in regions where consent is required.
+Use `ConsentManager` before requesting ads in regions where consent is required.
 
 ```kotlin
-val cmpManager = CMP_Manager(this)
+val consentManager = ConsentManager(this)
 
-cmpManager.gatherConsent { error ->
-    if (error == null && cmpManager.canRequestAds) {
+consentManager.gatherConsent { result ->
+    if (result.formError == null && result.canRequestAds) {
         // Safe point to request ads.
     }
 }
@@ -158,8 +158,8 @@ Useful helpers:
 
 1. `canRequestAds`
 2. `isPrivacyOptionsRequired`
-3. `loadAndShowConsent(...)`
-4. `checkEnableShowCMP(...)`
+3. `showPrivacyOptionsForm(...)`
+4. `canShowConsentForm(...)`
 
 ## App Resume Ads
 

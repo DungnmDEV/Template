@@ -10,7 +10,6 @@ import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.template.admob.AdmobManager
 import com.percas.studio.template.admob.AppOpenManager
-import com.percas.studio.template.cmp.CMP_Manager
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
@@ -19,16 +18,13 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        loadNativeAd(this, "")
-        loadNativeAdFullScreen(this, "", MediaAspectRatio.PORTRAIT)
-        loadInterstitialAd(this, "")
-        loadInterRewardAd(this, "")
-
-
-
-        val cmpManager = CMP_Manager(this)
-        cmpManager.checkEnableShowCMP {
-
+        AdmobManager.ensureConsent(this) { result ->
+            if (result.canRequestAds && result.formError == null) {
+                loadNativeAd(this, "")
+                loadNativeAdFullScreen(this, "", MediaAspectRatio.PORTRAIT)
+                loadInterstitialAd(this, "")
+                loadInterRewardAd(this, "")
+            }
         }
 
         val appOpenID = "ca-app-pub-3940256099942544/3419835294"

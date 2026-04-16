@@ -1,6 +1,8 @@
 package com.percas.studio.template.admob
 
 enum class AdErrorCode {
+    CONSENT_REQUIRED,
+    CONSENT_FLOW_ERROR,
     ADS_DISABLED,
     NO_INTERNET,
     BLANK_AD_UNIT_ID,
