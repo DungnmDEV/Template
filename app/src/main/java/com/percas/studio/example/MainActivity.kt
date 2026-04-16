@@ -9,10 +9,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.viewbinding.ViewBinding
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.example.databinding.ActivityMainBinding
+import com.percas.studio.example.nativead.FullscreenNativeAdRenderer
+import com.percas.studio.example.nativead.MediumNativeAdRenderer
+import com.percas.studio.example.nativead.SmallNativeAdRenderer
 import com.percas.studio.template.admob.AdmobManager
+import com.percas.studio.template.admob.renderer.NativeAdRenderer
 import com.percas.studio.template.model.InterAdHolder
 import com.percas.studio.template.model.NativeAdHolder
 import com.percas.studio.template.model.RewardInterAdHolder
@@ -61,8 +66,7 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Ads.nativeHolder,
                 binding.flNativeMedium,
-                R.layout.ad_unified_medium,
-                true
+                MediumNativeAdRenderer()
             )
         }
         binding.btnNativeSmall.setOnClickListener {
@@ -73,8 +77,7 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Ads.nativeHolder,
                 binding.flNativeSmall,
-                R.layout.ad_unified_small,
-                false
+                SmallNativeAdRenderer()
             )
         }
 
@@ -87,8 +90,7 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Ads.nativeHolder3,
                 binding.flNativeMedium,
-                R.layout.ad_unified_medium,
-                true
+                MediumNativeAdRenderer()
             )
         }
 
@@ -97,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Ads.nativeHolder2,
                 binding.flNativeFullscreen,
-                R.layout.ad_unified_fullscreen
+                FullscreenNativeAdRenderer()
             )
         }
         binding.btnLoadandshownativefullscreen.setOnClickListener {
@@ -105,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                 this,
                 "",
                 binding.flNativeFullscreen,
-                R.layout.ad_unified_fullscreen,
+                FullscreenNativeAdRenderer(),
                 MediaAspectRatio.PORTRAIT
             )
         }
@@ -237,19 +239,17 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    fun showNativeAd(
+    fun <T : ViewBinding> showNativeAd(
         activity: Activity,
         nativeAdHolder: NativeAdHolder,
         viewNativeAd: ViewGroup,
-        layoutNativeFormat: Int,
-        isNativeAdMedium: Boolean
+        renderer: NativeAdRenderer<T>
     ) {
         AdmobManager.showNativeAd(
             activity,
             nativeAdHolder,
             viewNativeAd,
-            layoutNativeFormat,
-            isNativeAdMedium,
+            renderer,
             object : AdmobManager.ShowAdCallBack {
                 override fun onAdShowed() {
                     viewNativeAd.visibility = View.VISIBLE
@@ -271,18 +271,16 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun loadAndShowNativeAds(
+    fun <T : ViewBinding> loadAndShowNativeAds(
         activity: Activity,
         nativeAdHolder: NativeAdHolder,
         viewNativeAd: ViewGroup,
-        layoutNativeAdFormat: Int,
-        isNativeAdMedium: Boolean
+        renderer: NativeAdRenderer<T>
     ) {
         AdmobManager.loadAndShowNativeAd(activity,
             nativeAdHolder,
             viewNativeAd,
-            layoutNativeAdFormat,
-            isNativeAdMedium,
+            renderer,
             object : AdmobManager.LoadAndShowAdCallBack {
                 override fun onAdLoaded() {
 
@@ -311,17 +309,17 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    fun showNativeAdFullScreen(
+    fun <T : ViewBinding> showNativeAdFullScreen(
         activity: Activity,
         nativeAdHolder: NativeAdHolder,
         viewNativeAd: ViewGroup,
-        layoutNativeAdFormat: Int
+        renderer: NativeAdRenderer<T>
     ) {
         AdmobManager.showNativeAdFullScreen(
             activity,
             nativeAdHolder,
             viewNativeAd,
-            layoutNativeAdFormat,
+            renderer,
             object : AdmobManager.ShowAdCallBack {
                 override fun onAdShowed() {
                     viewNativeAd.visibility = View.VISIBLE
@@ -345,18 +343,18 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    fun loadAndShowNativeFullScreen(
+    fun <T : ViewBinding> loadAndShowNativeFullScreen(
         activity: Activity,
         idNativeAd: String,
         viewNativeAd: ViewGroup,
-        layoutNativeFormat: Int,
+        renderer: NativeAdRenderer<T>,
         mediaAspectRatio: Int
     ) {
         AdmobManager.loadAndShowNativeAdFullScreen(
             activity,
             idNativeAd,
             viewNativeAd,
-            layoutNativeFormat,
+            renderer,
             mediaAspectRatio,
             object : AdmobManager.LoadAndShowAdCallBack {
                 override fun onAdLoaded() {

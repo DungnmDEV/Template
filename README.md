@@ -1,631 +1,574 @@
 # Template Library
 [![](https://jitpack.io/v/DungnmPercas/Template.svg)](https://jitpack.io/#DungnmPercas/Template)
-<h3 align="center">From Percas Studio by Dungnm98</h3>
 
-<p align="left"> <a href="https://developer.android.com" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/android/android-original-wordmark.svg" alt="android" width="40" height="40"/> </a> <a href="https://www.java.com" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" alt="java" width="40" height="40"/> </a> <a href="https://kotlinlang.org" target="_blank" rel="noreferrer"> <img src="https://www.vectorlogo.zone/logos/kotlinlang/kotlinlang-icon.svg" alt="kotlin" width="40" height="40"/> </a> </p>
+Android AdMob library for app teams that need:
 
-### Step1: Add it in your root build.gradle at the end of repositories:
-```bash
+1. AdMob initialization
+2. Banner ads
+3. Native ads
+4. Interstitial ads
+5. Reward and rewarded interstitial ads
+6. App open ads
+7. App resume ads
+8. Google UMP consent flow
+
+This repository contains:
+
+1. `Template`: the reusable ads library
+2. `app`: a sample app that demonstrates integration
+
+## Requirements
+
+1. Android `minSdk 27`
+2. Kotlin Android project
+3. Google Mobile Ads SDK in the host app
+
+## Installation
+
+### 1. Add JitPack repository
+
+```kotlin
 dependencyResolutionManagement {
-		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-		repositories {
-			mavenCentral()
-			maven { url 'https://jitpack.io' }
-		}
-	}
-```
-
-### Step 2: Add the dependency
-```bash
-          implementation 'com.google.android.gms:play-services-ads:23.0.0'  //May vary depending on version
-	  implementation 'com.github.DungnmPercas:Template:1.1.6'  //May vary depending on version
-```
-
-
-### Step 3: Add to AndroidManifest.xml
-```bash
-<!--    ID Ads Test:    ca-app-pub-3940256099942544~3347511713-->
-
-<meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="{YourAdsID}" />
-```
-
-### Step 4: Create MyApplication extend Application
-```kotlin
-class MyApplication: Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-
-    }
-}
-```
-### Step 5: Use MyApplication in AndroidManifest.xml
-```bash
-<application
-        android:name=".MyApplication"
-	........
-</application>
-```
-### Step 6: Init Admob 
-```kotlin
-class MyApplication: Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-        AdmobManager.initAdmob(this, timeOut = 10000,isTestAd = true, isEnableAds = true)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven(url = "https://jitpack.io")
     }
 }
 ```
 
+### 2. Add dependencies
 
-### Now you can use Admob Library
-
-## AppResumeAdsManager:
 ```kotlin
-class MyApplication: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        AdmobManager.initAdmob(this, timeOut = 10000, isEnableAds = true)
-        AppResumeAdsManager.getInstance().init(this, appOnresmeAdsId)
-	AppResumeAdsManager.getInstance().timeWaitToShow = 10000L
-    }
-}
-```
-## AppOpenAdsManager:
-```kotlin
-val appOpenAdsManager = AppOpenAdsManager(this,appOpenID,
-            timeOut = 10000, object : AppOpenAdsManager.AppOpenAdListener {
-            override fun onAdClose() {
-                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-            }
-
-            override fun onAdFail(error: String) {
-                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnitAds: String) {
-            }
-        })
-        
-        appOpenAdsManager.loadAndShowAoA()
-```
-
-## Banner Ads:
-```kotlin
-//Load and show Banner Ad normal
-    fun loadAndShowBanner(
-        activity: Activity,
-        idBannerAd: String,
-        viewBannerAd: ViewGroup,
-        viewLine: View
-    ) {
-        AdmobManager.loadAndShowBannerAd(
-            activity,
-            idBannerAd,
-            viewBannerAd,
-            object : AdmobManager.LoadAndShowAdCallBack {
-                override fun onAdLoaded() {}
-
-                override fun onAdShowed() {
-                    viewBannerAd.visible()
-                    viewLine.visible()
-                }
-
-                override fun onAdFailed(error: String) {
-                    viewBannerAd.gone()
-                    viewLine.gone()
-                }
-
-                override fun onAdClosed() {}
-
-                override fun onAdClicked() {}
-
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {}
-
-            })
-    }
-
-//Load and show Banner Collapsible Ad
-    fun loadAndShowBannerCollapsibleAd(activity: Activity, idBannerCollapsible: String, isBottomCollapsible:Boolean, viewBannerCollapsibleAd: ViewGroup, viewLine: View) {
-        AdmobManager.loadAndShowBannerCollapsibleAd(
-            activity,
-            idBannerCollapsible,
-            isBottomCollapsible,
-            viewBannerCollapsibleAd,
-            object : AdmobManager.LoadAndShowAdCallBack {
-                override fun onAdLoaded() {
-                }
-
-                override fun onAdShowed() {
-                    
-                }
-
-                override fun onAdFailed(error: String) {
-                    viewBannerCollapsibleAd.gone()
-                    viewLine.gone()
-                }
-
-                override fun onAdClosed() {
-                    
-                }
-
-                override fun onAdClicked() {
-                    
-                }
-
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                    
-                }
-
-            })
-    }
-
-```
-## Native Ad:
-```kotlin
-// Load Native Ads before show it or use Load and Show Native Ads Function
-// Use NativeAdHolder to hold Native ads id
-
-    val nativeAdHolder = NativeAdHolder(idNativeAd)
-
-    fun loadNativeAd(context: Context, nativeAdHolder: NativeAdHolder){
-        AdmobManager.loadNativeAd(context, nativeAdHolder, object : AdmobManager.LoadAdCallBack{
-            override fun onAdLoaded() {
-                
-            }
-
-            override fun onAdFailed(error: String) {
-                
-            }
-
-            override fun onAdClicked() {
-                
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-// After load Native Ad, you can show it on a ViewGroup
-fun showNativeAd(activity: Activity, nativeAdHolder: NativeAdHolder, viewNativeAd: ViewGroup, layoutNativeFormat: Int, isNativeAdMedium: Boolean) {
-        AdmobManager.showNativeAd(activity, nativeAdHolder, viewNativeAd, layoutNativeFormat, isNativeAdMedium, object : AdmobManager.ShowAdCallBack{
-            override fun onAdShowed() {
-            }
-
-            override fun onAdFailed(error: String) {
-                viewNativeAd.gone()
-            }
-
-            override fun onAdClosed() {
-                
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-//Use load and show Native ad Function
- fun loadAndShowNativeAds(activity: Activity, nativeAdHolder: NativeAdHolder, viewNativeAd: ViewGroup, layoutNativeAdFormat: Int, isNativeAdMedium: Boolean) {
-        AdmobManager.loadAndShowNativeAd(activity, nativeAdHolder, viewNativeAd, layoutNativeAdFormat, isNativeAdMedium,
-            object : AdmobManager.LoadAndShowAdCallBack {
-                override fun onAdLoaded() {
-                    
-                }
-
-                override fun onAdShowed() {
-                    
-                }
-
-                override fun onAdFailed(error: String) {
-                    viewNativeAd.gone()
-                }
-
-                override fun onAdClosed() {
-                    
-                }
-
-                override fun onAdClicked() {
-                    
-                }
-
-                override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                    
-                }
-
-            })
-    }
-
-
-//For Native Ad Full Screen
-//Load native ad full screen
-fun loadNativeAdFullScreen(context: Context, nativeAdHolder: NativeAdHolder, mediaAspectRatio: Int){
-        AdmobManager.loadNativeAdFullScreen(context, nativeAdHolder, mediaAspectRatio, object : AdmobManager.LoadAdCallBack{
-            override fun onAdLoaded() {
-                
-            }
-
-            override fun onAdFailed(error: String) {
-                
-            }
-
-            override fun onAdClicked() {
-                
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-//Show native ad full screen
- fun showNativeAdFullScreen(activity: Activity, nativeAdHolder: NativeAdHolder, viewNativeAd: ViewGroup, layoutNativeAdFormat: Int){
-        AdmobManager.showNativeAdFullScreen(activity, nativeAdHolder, viewNativeAd, layoutNativeAdFormat, object : AdmobManager.ShowAdCallBack{
-            override fun onAdShowed() {
-                
-            }
-
-            override fun onAdFailed(error: String) {
-                viewNativeAd.gone()
-            }
-
-            override fun onAdClosed() {
-                
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-//Load and show Native Ad full screen
-    fun loadAndShowNativeFullScreen(activity: Activity, idNativeAd: String, viewNativeAd: ViewGroup, layoutNativeFormat: Int, mediaAspectRatio: Int){
-        AdmobManager.loadAndShowNativeAdFullScreen(activity, idNativeAd, viewNativeAd, layoutNativeFormat, mediaAspectRatio, object :AdmobManager.LoadAndShowAdCallBack{
-            override fun onAdLoaded() {
-                
-            }
-
-            override fun onAdShowed() {
-                
-            }
-
-            override fun onAdFailed(error: String) {
-                viewNativeAd.gone()
-            }
-
-            override fun onAdClosed() {
-                
-            }
-
-            override fun onAdClicked() {
-                
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-```
-## Interstitial Ad:
-```kotlin
-//Load interstitial ad
-    fun loadInterstitialAd(context: Context, interAdHolder: InterAdHolder){
-        AdmobManager.loadInterstitialAd(context, interAdHolder, object : AdmobManager.LoadAdCallBack{
-            override fun onAdLoaded() {
-            }
-
-            override fun onAdFailed(error: String) {
-            }
-
-            override fun onAdClicked() {
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-            }
-        })
-    }
-
-//Show interstitial ad
-    fun showInterstitialAd(activity: Activity, interAdHolder: InterAdHolder){
-        AdmobManager.showInterstitialAd(activity, interAdHolder, object : AdmobManager.ShowAdCallBack{
-            override fun onAdShowed() {
-                
-            }
-
-            override fun onAdFailed(error: String) {
-                startActivity(Intent(this, TargetActivity::java.class))
-            }
-
-            override fun onAdClosed() {
-                startActivity(Intent(this, TargetActivity::java.class))
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-//Load and show interstitial ad
-    fun loadAndShowInterstitialAd(activity: Activity, interAdHolder: InterAdHolder){
-        AdmobManager.loadAndShowInterstitialAd(activity, interAdHolder, object :AdmobManager.LoadAndShowAdCallBack{
-            override fun onAdLoaded() {
-                
-            }
-
-            override fun onAdShowed() {
-                
-            }
-
-            override fun onAdFailed(error: String) {
-                startActivity(Intent(this, TargetActivity::java.class))
-            }
-
-            override fun onAdClosed() {
-                startActivity(Intent(this, TargetActivity::java.class))
-            }
-
-            override fun onAdClicked() {
-                
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-```
-## Reward Ad:
-```kotlin
-//Load and show Reward Ad
-   fun loadAndShowRewardAd(activity: Activity, idRewardAd: String){
-        AdmobManager.loadAndShowRewardAd(activity, idRewardAd, object : AdmobManager.LoadAndShowRewardAdCallBack{
-            override fun onAdLoaded() {
-            }
-
-            override fun onAdShowed() {
-            }
-
-            override fun onAdFailed(error: String) {
-            }
-
-            override fun onAdClosed() {
-            }
-
-            override fun onAdEarned() {
-                Log.d(TAG, "onAdEarned: Collected reward!")
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-            }
-
-        })
-    }
-
-//Load Reward Interstitial Ad
-fun loadInterRewardAd(context: Context, rewardInterAdHolder: RewardInterAdHolder){
-        AdmobManager.loadInterReward(context, rewardInterAdHolder, object : AdmobManager.LoadAdCallBack{
-            override fun onAdLoaded() {
-            }
-
-            override fun onAdFailed(error: String) {
-            }
-
-            override fun onAdClicked() {
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-                
-            }
-
-        })
-    }
-
-//Show Reward Interstitial Ad
-fun showRewardInterAd(activity: Activity, rewardInterAdHolder: RewardInterAdHolder){
-        AdmobManager.showInterReward(activity, rewardInterAdHolder, object : AdmobManager.ShowRewardAdCallBack{
-            override fun onAdShowed() {
-                
-            }
-
-            override fun onAdClosed() {
-            }
-
-            override fun onAdEarned() {
-                Log.d(TAG, "onAdEarned: Collected reward!")
-            }
-
-            override fun onAdFailed(error: String) {
-            }
-
-            override fun onAdPaid(adValue: AdValue, adUnit: String) {
-            }
-
-        })
-    }
-```
-
-# Adjust Manager:
-## Step 1: Add Adjust to your project
- 
- Visit the following link and download the latest version of the 2 files ARR and JAR: https://github.com/adjust/android_sdk/releases
- Visit the following link and download version 3.12.0 of the ARR file: https://github.com/adjust/adjust_signature_sdk/releases
- <br>
- In the directory {your_project_name}/app, create a libs directory and add the 2 downloaded files to this directory
-<br>
- Open your app-level build.gradle file and add the following, in their respective sections:
- ```bash
-android {
-	defaultConfig {
-	ndk.abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
-	...
-	}
-
-	...
-}
-
 dependencies {
-	...
-	implementation(files("libs/adjust-android-signature-3.12.0.aar"))
-  	implementation(files("libs/adjust-android-4.35.0.aar")) //May vary depending on version
+    implementation("com.google.android.gms:play-services-ads:24.4.0")
+    implementation("com.github.DungnmPercas:Template:1.1.6")
 }
 ```
- Add to the app's proguard-rules.pro file:
- ```bash
--keep class com.adjust.sdk.** { *; }
--keep class com.google.android.gms.common.ConnectionResult {
-   int SUCCESS;
-}
--keep class com.google.android.gms.ads.identifier.AdvertisingIdClient {
-   com.google.android.gms.ads.identifier.AdvertisingIdClient$Info getAdvertisingIdInfo(android.content.Context);
-}
--keep class com.google.android.gms.ads.identifier.AdvertisingIdClient$Info {
-   java.lang.String getId();
-   boolean isLimitAdTrackingEnabled();
-}
--keep public class com.android.installreferrer.** { *; }
-```
- Add to the AndroidManifest.xml:
- ```bash
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-<uses-permission  android:name="com.google.android.gms.permission.AD_ID"/>
 
+Use the latest library version published on JitPack.
+
+## AndroidManifest setup
+
+Add your AdMob application ID in the host app manifest:
+
+```xml
 <application>
-	...
-	<receiver
-	   android:name="com.adjust.sdk.AdjustReferrerReceiver"
-   	   android:exported="true"
- 	   android:permission="android.permission.INSTALL_PACKAGES">
-	   <intent-filter>
-  	     <action android:name="com.android.vending.INSTALL_REFERRER" />
-	   </intent-filter>
-	</receiver>
+    <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy" />
 </application>
 ```
-## Step 2: Init Adjust
-- In MyApplication:
+
+For testing, Google provides this sample app ID:
+
+```xml
+ca-app-pub-3940256099942544~3347511713
+```
+
+## Initialize the library
+
+Create an `Application` class and initialize AdMob once at app startup.
+
 ```kotlin
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        ...
-	
-        AdjustManager.initAdjust(this, {your_app_token}, isTestAdjust) 
-    }
-}
-//In your release version, change isTestAdjust to falsefalse
-```
-## Step 3: Post revenue to Adjust
 
-In the `onAdPaid` event:
-
-```kotlin
-override fun onAdPaid(adValue: AdValue, adUnit: String) {
-    AdjustManager.postRevenue(adValue, adUnit)
-}
-```
-# Firebase Instruction
-## Step 1: Add Firebase to your project
-Download and save file google-services.json to file **app**
-In Android Studio: **Tools** > **Firebase** > click and add SDK of **Analytics**, **Crashlytics**, **Cloud Messaging**, **Remote Config**
-## Step 2: Remote config
-You need a remote_config_defaults.xml file to store keys and default values, you can create new entries to store new keys
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<defaultsMap>
-    <entry>
-        <key>test_ad</key>
-        <value>true</value>
-    </entry>
-</defaultsMap>
-
-```
-
-```kotlin
-fun initRemoteConfigString(onFinish: (config: FirebaseRemoteConfig) -> Unit) {
-        val mFirebaseRemoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-        val configSettings: FirebaseRemoteConfigSettings = FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(3600)
-            .build()
-
-        mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings)
-        mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
-
-        mFirebaseRemoteConfig.fetchAndActivate().addOnCompleteListener { _ ->
-            onFinish.invoke(mFirebaseRemoteConfig)
-        }
-    }
-```
-```kotlin
-//Use in your activity:
-
-initRemoteConfig{ 
-            Log,d(TAG, it.getString(your_key))
-        }
-```
-## Step 3: Message Service
-Create MessageService class:
-```kotlin
-class MessageService : FirebaseMessagingService() {
-
-    override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        super.onMessageReceived(remoteMessage)
-
-        remoteMessage.notification?.let {
-            showNotification(it.title ?: "", it.body ?: "")
-        }
-    }
-
-    private fun showNotification(title: String, message: String) {
-        val intent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
-            .setContentTitle(title)
-            .setContentText(message)
-            .setSmallIcon(R.drawable.logo_app)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("default_channel_id", "Default Channel", NotificationManager.IMPORTANCE_DEFAULT)
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        notificationManager.notify(0, notificationBuilder.build())
+        AdmobManager.initAdmob(
+            context = this,
+            timeOut = 10_000,
+            isTestAd = true,
+            isEnableAd = true,
+        )
     }
 }
 ```
-Add in your AndroidManifest.xml:
+
+Then register it in the manifest:
+
 ```xml
 <application
-	...
-	<service
-		android:name=".MessageService"
-		android:exported="false">
-		<intent-filter>
-			<action android:name="com.google.firebase.MESSAGING_EVENT" />
-		</intent-filter>
-	</service>
-</application>
+    android:name=".MyApplication"
+    ... />
 ```
+
+## App Resume Ads
+
+If you want ads to show automatically when the app returns to foreground:
+
+```kotlin
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+
+        AdmobManager.initAdmob(this, 10_000, true, true)
+
+        AppResumeAdsManager.getInstance().init(
+            application = this,
+            appOnresmeAdsId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy"
+        )
+
+        AppResumeAdsManager.getInstance().timeWaitToShow = 10_000L
+    }
+}
+```
+
+Notes:
+
+1. In test mode, the library will use Google's test app-open unit.
+2. In production, pass your real app resume ad unit ID.
+3. Use `timeWaitToShow` to avoid showing resume ads too frequently.
+
+## App Open Ads
+
+Use `AppOpenAdsManager` when you want to show an app open ad explicitly, for example on splash.
+
+```kotlin
+val appOpenAdsManager = AppOpenAdsManager(
+    activity = this,
+    appOpenID = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    timeOut = 10_000,
+    appOpenAdsListener = object : AppOpenAdsManager.AppOpenAdListener {
+        override fun onAdClose() {
+            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            finish()
+        }
+
+        override fun onAdFail(error: String) {
+            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            finish()
+        }
+
+        override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {
+        }
+    }
+)
+
+appOpenAdsManager.loadAndShowAoA()
+```
+
+## Consent With UMP
+
+Use `CMP_Manager` to request consent before showing ads in regions where consent is required.
+
+```kotlin
+val cmpManager = CMP_Manager(this)
+
+cmpManager.gatherConsent { error ->
+    if (error == null && cmpManager.canRequestAds) {
+        // Safe point to request ads.
+    }
+}
+```
+
+Useful helpers:
+
+1. `canRequestAds`
+2. `isPrivacyOptionsRequired`
+3. `loadAndShowConsent(...)`
+4. `checkEnableShowCMP(...)`
+
+## Banner Ads
+
+### Normal banner
+
+```kotlin
+AdmobManager.loadAndShowBannerAd(
+    activity = this,
+    idBannerAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    viewBannerAd = binding.bannerContainer,
+    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
+        override fun onAdLoaded() {}
+
+        override fun onAdShowed() {
+            binding.bannerContainer.visibility = View.VISIBLE
+        }
+
+        override fun onAdFailed(error: String) {
+            binding.bannerContainer.visibility = View.GONE
+        }
+
+        override fun onAdClosed() {}
+
+        override fun onAdClicked() {}
+
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### Collapsible banner
+
+```kotlin
+AdmobManager.loadAndShowBannerCollapsibleAd(
+    activity = this,
+    idBannerCollapAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    isBottomCollapsible = true,
+    viewBanner = binding.bannerContainer,
+    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+## Native Ads
+
+Native ads now use a `Renderer + ViewBinding` contract.
+
+The library is responsible for:
+
+1. loading native ads
+2. caching native ads
+3. showing loading placeholders
+4. lifecycle and callbacks
+
+The host app is responsible for:
+
+1. defining the native ad layout
+2. creating a `NativeAdRenderer`
+3. binding views with ViewBinding
+
+### 1. Create a holder
+
+```kotlin
+val nativeHolder = NativeAdHolder("ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy")
+```
+
+### 2. Load native ad first
+
+```kotlin
+AdmobManager.loadNativeAd(
+    context = this,
+    nativeHolder = nativeHolder,
+    adCallBack = object : AdmobManager.LoadAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### 3. Create a renderer
+
+Example renderer:
+
+```kotlin
+class MediumNativeAdRenderer : NativeAdRenderer<AdUnifiedMediumBinding> {
+    override val loadingStyle = NativeAdLoadingStyle.MEDIUM
+
+    override fun inflate(
+        layoutInflater: LayoutInflater,
+        parent: ViewGroup
+    ): AdUnifiedMediumBinding {
+        return AdUnifiedMediumBinding.inflate(layoutInflater, parent, false)
+    }
+
+    override fun root(binding: AdUnifiedMediumBinding): NativeAdView = binding.root
+
+    override fun bind(binding: AdUnifiedMediumBinding, nativeAd: NativeAd) {
+        binding.root.mediaView = binding.adMedia
+        binding.root.headlineView = binding.adHeadline
+        binding.root.bodyView = binding.adBody
+        binding.root.callToActionView = binding.adCallToAction
+        binding.root.iconView = binding.adAppIcon
+        binding.root.starRatingView = binding.adStars
+
+        binding.adHeadline.text = nativeAd.headline
+        binding.adMedia.mediaContent = nativeAd.mediaContent
+
+        binding.adBody.apply {
+            text = nativeAd.body
+            visibility = if (nativeAd.body.isNullOrBlank()) View.INVISIBLE else View.VISIBLE
+        }
+
+        binding.adCallToAction.apply {
+            text = nativeAd.callToAction
+            visibility = if (nativeAd.callToAction.isNullOrBlank()) View.INVISIBLE else View.VISIBLE
+        }
+
+        if (nativeAd.icon == null) {
+            binding.adAppIcon.visibility = View.GONE
+        } else {
+            binding.adAppIcon.setImageDrawable(nativeAd.icon!!.drawable)
+            binding.adAppIcon.visibility = View.VISIBLE
+        }
+
+        if (nativeAd.starRating == null) {
+            binding.adStars.visibility = View.GONE
+        } else {
+            binding.adStars.rating = nativeAd.starRating!!.toFloat()
+            binding.adStars.visibility = View.VISIBLE
+        }
+
+        binding.root.setNativeAd(nativeAd)
+    }
+}
+```
+
+### 4. Show preloaded native ad
+
+```kotlin
+AdmobManager.showNativeAd(
+    activity = this,
+    nativeHolder = nativeHolder,
+    viewNativeAd = binding.nativeContainer,
+    renderer = MediumNativeAdRenderer(),
+    adCallBack = object : AdmobManager.ShowAdCallBack {
+        override fun onAdShowed() {
+            binding.nativeContainer.visibility = View.VISIBLE
+        }
+
+        override fun onAdFailed(error: String) {
+            binding.nativeContainer.visibility = View.GONE
+        }
+
+        override fun onAdClosed() {}
+
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### 5. Load and show native ad directly
+
+```kotlin
+AdmobManager.loadAndShowNativeAd(
+    activity = this,
+    nativeHolder = nativeHolder,
+    viewNativeAd = binding.nativeContainer,
+    renderer = MediumNativeAdRenderer(),
+    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### Fullscreen native ad
+
+Load:
+
+```kotlin
+AdmobManager.loadNativeAdFullScreen(
+    context = this,
+    nativeHolder = nativeHolder,
+    mediaAspectRatio = MediaAspectRatio.PORTRAIT,
+    adCallBack = object : AdmobManager.LoadAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+Show:
+
+```kotlin
+AdmobManager.showNativeAdFullScreen(
+    activity = this,
+    nativeHolder = nativeHolder,
+    viewNativeAd = binding.fullscreenNativeContainer,
+    renderer = FullscreenNativeAdRenderer(),
+    adCallBack = object : AdmobManager.ShowAdCallBack {
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+Or load and show directly:
+
+```kotlin
+AdmobManager.loadAndShowNativeAdFullScreen(
+    activity = this,
+    idNativeAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    viewNativeAd = binding.fullscreenNativeContainer,
+    renderer = FullscreenNativeAdRenderer(),
+    mediaAspectRatio = MediaAspectRatio.PORTRAIT,
+    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+## Interstitial Ads
+
+### Load interstitial
+
+```kotlin
+val interHolder = InterAdHolder("ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy")
+
+AdmobManager.loadInterstitialAd(
+    activity = this,
+    interHolder = interHolder,
+    adLoadCallback = object : AdmobManager.LoadAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### Show interstitial
+
+```kotlin
+AdmobManager.showInterstitialAd(
+    activity = this,
+    interHolder = interHolder,
+    adCallback = object : AdmobManager.ShowAdCallBack {
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### Load and show interstitial directly
+
+```kotlin
+AdmobManager.loadAndShowInterstitialAd(
+    activity = this,
+    interHolder = interHolder,
+    adCallback = object : AdmobManager.LoadAndShowAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+## Reward Ads
+
+### Load and show rewarded ad
+
+```kotlin
+AdmobManager.loadAndShowRewardAd(
+    activity = this,
+    idRewardAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    adCallback = object : AdmobManager.LoadAndShowRewardAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdShowed() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClosed() {}
+        override fun onAdEarned() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+### Rewarded interstitial
+
+```kotlin
+val rewardHolder = RewardInterAdHolder("ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy")
+
+AdmobManager.loadInterReward(
+    context = this,
+    rewardInterAdHolder = rewardHolder,
+    adCallBack = object : AdmobManager.LoadAdCallBack {
+        override fun onAdLoaded() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdClicked() {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+
+AdmobManager.showInterReward(
+    activity = this,
+    rewardInterAdHolder = rewardHolder,
+    adCallback = object : AdmobManager.ShowRewardAdCallBack {
+        override fun onAdShowed() {}
+        override fun onAdClosed() {}
+        override fun onAdEarned() {}
+        override fun onAdFailed(error: String) {}
+        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    }
+)
+```
+
+## Revenue Tracking
+
+All major ad callbacks expose:
+
+```kotlin
+override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
+}
+```
+
+Use this callback to:
+
+1. log revenue
+2. forward data to analytics
+3. post ad revenue to MMPs
+
+## Test Mode And Production Mode
+
+When calling `AdmobManager.initAdmob(...)`:
+
+1. `isTestAd = true`
+   - library uses Google test units where supported
+2. `isTestAd = false`
+   - you must pass real ad unit IDs
+
+Example:
+
+```kotlin
+AdmobManager.initAdmob(
+    context = this,
+    timeOut = 10_000,
+    isTestAd = false,
+    isEnableAd = true,
+)
+```
+
+## Current Native Ad API Summary
+
+Native ads no longer use:
+
+1. `layoutNativeFormat: Int`
+2. `isNativeMedium: Boolean`
+3. hardcoded `findViewById(...)` contract inside the library
+
+They now use:
+
+1. `NativeAdRenderer<T : ViewBinding>`
+2. host-owned layout and binding logic
+3. library-owned loading and ad lifecycle logic
+
+## Sample App
+
+The `app` module in this repository contains working examples for:
+
+1. banner ads
+2. native ads with custom renderers
+3. interstitial ads
+4. rewarded ads
+5. app open ads
+6. app resume ads
+7. consent flow
+
+Use it as the reference implementation for integration.
