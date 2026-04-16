@@ -18,14 +18,10 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        AdmobManager.ensureConsent(this) { result ->
-            if (result.canRequestAds && result.formError == null) {
-                loadNativeAd(this, "")
-                loadNativeAdFullScreen(this, "", MediaAspectRatio.PORTRAIT)
-                loadInterstitialAd(this, "")
-                loadInterRewardAd(this, "")
-            }
-        }
+        loadNativeAd(this, "")
+        loadNativeAdFullScreen(this, "", MediaAspectRatio.PORTRAIT)
+        loadInterstitialAd(this, "")
+        loadInterRewardAd(this, "")
 
         val appOpenID = "ca-app-pub-3940256099942544/3419835294"
         AppOpenManager.showOnSlash(this, appOpenID,

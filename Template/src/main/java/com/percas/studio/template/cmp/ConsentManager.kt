@@ -8,7 +8,7 @@ import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.FormError
 import com.google.android.ump.UserMessagingPlatform
 
-class ConsentManager(
+internal class ConsentManager(
     private val activity: Activity,
     private val config: ConsentConfig = ConsentConfig(),
 ) {

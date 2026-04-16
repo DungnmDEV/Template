@@ -15,15 +15,12 @@ import com.google.android.gms.ads.RequestConfiguration
 import com.percas.studio.template.admob.renderer.NativeAdRenderer
 import com.percas.studio.template.cmp.ConsentConfig
 import com.percas.studio.template.cmp.ConsentManager
-import com.percas.studio.template.cmp.ConsentResult
 
 @SuppressLint("InflateParams")
 object AdmobManager {
 
     private val testDeviceIds: ArrayList<String> = ArrayList()
     private var isConsentRequestedThisSession = false
-    private var pendingConsentCallbacks: MutableList<(ConsentResult) -> Unit> = mutableListOf()
-    private var lastConsentResult: ConsentResult? = null
 
     internal var adRequest: AdRequest?
         get() = AdmobCore.adRequest
@@ -53,28 +50,8 @@ object AdmobManager {
     fun initAdmob(context: Context?, config: AdmobConfig) {
         initCore(context, config)
         if (context is Activity) {
-            requestConsentOnce(context, ConsentConfig())
+            requestConsentOnce(context)
         }
-    }
-
-    @JvmStatic
-    fun initAdmob(
-        activity: Activity,
-        config: AdmobConfig,
-        consentConfig: ConsentConfig = ConsentConfig(),
-        onConsentResult: ((ConsentResult) -> Unit)? = null,
-    ) {
-        initCore(activity, config)
-        requestConsentOnce(activity, consentConfig, onConsentResult)
-    }
-
-    @JvmStatic
-    fun ensureConsent(
-        activity: Activity,
-        consentConfig: ConsentConfig = ConsentConfig(),
-        onConsentResult: ((ConsentResult) -> Unit)? = null,
-    ) {
-        requestConsentOnce(activity, consentConfig, onConsentResult)
     }
 
     private fun initCore(context: Context?, config: AdmobConfig) {
@@ -97,31 +74,18 @@ object AdmobManager {
 
     private fun requestConsentOnce(
         activity: Activity,
-        consentConfig: ConsentConfig,
-        onConsentResult: ((ConsentResult) -> Unit)? = null,
+        consentConfig: ConsentConfig = ConsentConfig(),
     ) {
         synchronized(this) {
             if (isConsentRequestedThisSession) {
-                lastConsentResult?.let { result ->
-                    onConsentResult?.invoke(result)
-                    return
-                }
-                onConsentResult?.let { pendingConsentCallbacks.add(it) }
                 return
             }
             isConsentRequestedThisSession = true
             AdmobCore.markConsentPending()
-            onConsentResult?.let { pendingConsentCallbacks.add(it) }
         }
 
         val consentManager = ConsentManager(activity, consentConfig)
         consentManager.gatherConsent { result ->
-            val callbacks: List<(ConsentResult) -> Unit>
-            synchronized(this) {
-                lastConsentResult = result
-                callbacks = pendingConsentCallbacks.toList()
-                pendingConsentCallbacks.clear()
-            }
             if (result.formError != null) {
                 AdmobCore.markConsentError(result.formError.message ?: "Consent flow error")
             } else if (result.canRequestAds) {
@@ -129,7 +93,6 @@ object AdmobManager {
             } else {
                 AdmobCore.markConsentDenied("Consent is required before requesting ads")
             }
-            callbacks.forEach { callback -> callback(result) }
         }
     }
 
@@ -142,7 +105,14 @@ object AdmobManager {
         return AdErrorInfo(code, AdmobCore.consentMessage)
     }
 
-    private inline fun requireConsent(onFail: (AdErrorInfo) -> Unit, block: () -> Unit) {
+    private inline fun requireConsent(
+        context: Context,
+        onFail: (AdErrorInfo) -> Unit,
+        block: () -> Unit,
+    ) {
+        if (!AdmobCore.canRequestAdsByConsent() && context is Activity) {
+            requestConsentOnce(context)
+        }
         if (!AdmobCore.canRequestAdsByConsent()) {
             onFail(consentError())
             return
@@ -186,7 +156,7 @@ object AdmobManager {
         viewBannerAd: ViewGroup,
         adCallBack: LoadAndShowAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallBack::onAdFailed) {
             BannerAdManager.loadAndShowBannerAd(activity, idBannerAd, viewBannerAd, adCallBack)
         }
     }
@@ -198,7 +168,7 @@ object AdmobManager {
         viewBanner: ViewGroup,
         adCallBack: LoadAndShowAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallBack::onAdFailed) {
             BannerAdManager.loadAndShowBannerCollapsibleAd(
                 activity,
                 idBannerCollapAd,
@@ -215,7 +185,7 @@ object AdmobManager {
         idAd: String,
         adCallBack: LoadAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = context, onFail = adCallBack::onAdFailed) {
             NativeAdManager.loadNativeAd(context, idAd, adCallBack)
         }
     }
@@ -228,7 +198,7 @@ object AdmobManager {
         renderer: NativeAdRenderer<T>,
         adCallBack: ShowAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallBack::onAdFailed) {
             NativeAdManager.showNativeAd(activity, idAd, viewNativeAd, renderer, adCallBack)
         }
     }
@@ -242,7 +212,7 @@ object AdmobManager {
         renderer: NativeAdRenderer<T>,
         adCallBack: LoadAndShowAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallBack::onAdFailed) {
             NativeAdManager.loadAndShowNativeAd(activity, idAd, viewNativeAd, renderer, adCallBack)
         }
     }
@@ -255,7 +225,7 @@ object AdmobManager {
         mediaAspectRatio: Int,
         adCallBack: LoadAndShowAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallBack::onAdFailed) {
             NativeAdManager.loadAndShowNativeAdFullScreen(
                 activity,
                 idNativeAd,
@@ -273,7 +243,7 @@ object AdmobManager {
         mediaAspectRatio: Int,
         adCallBack: LoadAdCallBack
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = context, onFail = adCallBack::onAdFailed) {
             NativeAdManager.loadNativeAdFullScreen(context, idAd, mediaAspectRatio, adCallBack)
         }
     }
@@ -287,7 +257,7 @@ object AdmobManager {
         adCallBack: ShowAdCallBack
 
     ) {
-        requireConsent(onFail = adCallBack::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallBack::onAdFailed) {
             NativeAdManager.showNativeAdFullScreen(activity, idAd, viewNativeAd, renderer, adCallBack)
         }
     }
@@ -299,7 +269,7 @@ object AdmobManager {
         idAd: String,
         adLoadCallback: LoadAdCallBack
     ) {
-        requireConsent(onFail = adLoadCallback::onAdFailed) {
+        requireConsent(context = activity, onFail = adLoadCallback::onAdFailed) {
             InterstitialAdManager.loadInterstitialAd(activity, idAd, adLoadCallback)
         }
     }
@@ -310,7 +280,7 @@ object AdmobManager {
         idAd: String,
         adCallback: ShowAdCallBack,
     ) {
-        requireConsent(onFail = adCallback::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallback::onAdFailed) {
             InterstitialAdManager.showInterstitialAd(activity, idAd, adCallback)
         }
     }
@@ -320,7 +290,7 @@ object AdmobManager {
         idAd: String,
         adCallback: LoadAndShowAdCallBack
     ) {
-        requireConsent(onFail = adCallback::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallback::onAdFailed) {
             InterstitialAdManager.loadAndShowInterstitialAd(activity, idAd, adCallback)
         }
     }
@@ -330,7 +300,7 @@ object AdmobManager {
         idAd: String,
         adCallback: LoadAndShowAdCallBack
     ) {
-        requireConsent(onFail = adCallback::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallback::onAdFailed) {
             InterstitialAdManager.loadAndShowInterstitialAdWithoutLoadingScreen(activity, idAd, adCallback)
         }
     }
@@ -340,7 +310,7 @@ object AdmobManager {
         admobId: String,
         adCallback: LoadAndShowRewardAdCallBack
     ) {
-        requireConsent(onFail = adCallback::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallback::onAdFailed) {
             RewardAdManager.loadAndShowRewardAd(activity, admobId, adCallback)
         }
     }
@@ -351,7 +321,7 @@ object AdmobManager {
         idAd: String,
         adLoadCallback: LoadAdCallBack
     ) {
-        requireConsent(onFail = adLoadCallback::onAdFailed) {
+        requireConsent(context = context, onFail = adLoadCallback::onAdFailed) {
             RewardAdManager.loadInterReward(context, idAd, adLoadCallback)
         }
     }
@@ -363,7 +333,7 @@ object AdmobManager {
         idAd: String,
         adCallback: ShowRewardAdCallBack
     ) {
-        requireConsent(onFail = adCallback::onAdFailed) {
+        requireConsent(context = activity, onFail = adCallback::onAdFailed) {
             RewardAdManager.showInterReward(activity, idAd, adCallback)
         }
     }
