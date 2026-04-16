@@ -1,53 +1,32 @@
-# Template Library
+# Template Library (AdMob)
+
 [![](https://jitpack.io/v/DungnmPercas/Template.svg)](https://jitpack.io/#DungnmPercas/Template)
 
-Android AdMob library for company apps.
+Thư viện AdMob dùng chung cho các app Android trong công ty.
 
-Current scope:
+## Tính năng
 
-1. AdMob initialization
-2. Banner ads
-3. Native ads with `Renderer + ViewBinding`
-4. Interstitial ads
-5. Rewarded ads
-6. Rewarded interstitial ads
-7. App open ads
-8. App resume ads
-9. Google UMP consent flow
+- Khởi tạo AdMob tập trung qua `AdmobManager`
+- Banner Ads (normal + collapsible)
+- Native Ads (renderer + ViewBinding)
+- Interstitial Ads
+- Rewarded Ads
+- Rewarded Interstitial Ads
+- App Open Ads (splash)
+- App Resume Ads (foreground)
+- Consent (UMP) xử lý **nội bộ trong library**, app không cần tự gọi
 
-This repository contains:
+## Yêu cầu
 
-1. `Template`: reusable ads library
-2. `app`: sample integration app
+- `minSdk = 27`
+- Kotlin Android project
+- Đã khai báo App ID trong AndroidManifest
 
-## Phase Status
+## Cài đặt
 
-This phase is complete with these architectural changes in place:
+### 1) Thêm JitPack
 
-1. Public ad APIs no longer expose ad holders
-2. Internal ad state and cache are managed inside the library
-3. Native ads use a `NativeAdRenderer<T : ViewBinding>` contract
-4. The old monolithic `AdmobManager` has been split into focused internal managers
-5. Shared runtime state has been moved to `AdmobCore`
-
-Current internal structure:
-
-1. `AdmobManager`: public facade and callback contracts
-2. `AdmobCore`: shared state, request config, timeout, dialog helpers, network helper
-3. `BannerAdManager`
-4. `NativeAdManager`
-5. `InterstitialAdManager`
-6. `RewardAdManager`
-
-## Requirements
-
-1. Android `minSdk 27`
-2. Kotlin Android project
-3. Google Mobile Ads SDK in the host app
-
-## Installation
-
-### 1. Add JitPack repository
+`settings.gradle.kts`
 
 ```kotlin
 dependencyResolutionManagement {
@@ -60,20 +39,16 @@ dependencyResolutionManagement {
 }
 ```
 
-### 2. Add dependencies
+### 2) Thêm dependency
 
 ```kotlin
 dependencies {
     implementation("com.google.android.gms:play-services-ads:24.4.0")
-    implementation("com.github.DungnmPercas:Template:1.1.6")
+    implementation("com.github.DungnmPercas:Template:<latest-version>")
 }
 ```
 
-Use the latest library version published on JitPack.
-
-## AndroidManifest Setup
-
-Add your AdMob application ID in the host app manifest:
+## AndroidManifest
 
 ```xml
 <application>
@@ -83,15 +58,15 @@ Add your AdMob application ID in the host app manifest:
 </application>
 ```
 
-Google test app ID:
+Google test App ID:
 
 ```xml
 ca-app-pub-3940256099942544~3347511713
 ```
 
-## Initialize The Library
+## Khởi tạo
 
-Create an `Application` class and initialize AdMob once.
+Khởi tạo một lần trong `Application`:
 
 ```kotlin
 class MyApplication : Application() {
@@ -110,112 +85,21 @@ class MyApplication : Application() {
 }
 ```
 
-Register it in the manifest:
+Đăng ký trong manifest:
 
 ```xml
-<application
-    android:name=".MyApplication"
-    ... />
+<application android:name=".MyApplication" ... />
 ```
 
-## Test Mode And Production Mode
+## Consent (UMP)
 
-When calling `AdmobManager.initAdmob(...)`:
+- Consent được xử lý nội bộ trong library.
+- App **không cần** import hay gọi `ConsentManager`.
+- Khi chưa đủ điều kiện consent, library sẽ trả lỗi qua callback (`onAdFailed`).
 
-1. `isTestAd = true`
-   The library uses Google test units where supported.
-2. `isTestAd = false`
-   You must pass real ad unit IDs.
+## Sử dụng nhanh
 
-Example:
-
-```kotlin
-AdmobManager.initAdmob(
-    context = this,
-    config = AdmobConfig(
-        requestTimeoutMillis = 10_000,
-        isTestAd = false,
-        isEnableAd = true,
-    )
-)
-```
-
-## Consent With UMP
-
-Use `ConsentManager` before requesting ads in regions where consent is required.
-
-```kotlin
-val consentManager = ConsentManager(this)
-
-consentManager.gatherConsent { result ->
-    if (result.formError == null && result.canRequestAds) {
-        // Safe point to request ads.
-    }
-}
-```
-
-Useful helpers:
-
-1. `canRequestAds`
-2. `isPrivacyOptionsRequired`
-3. `showPrivacyOptionsForm(...)`
-4. `canShowConsentForm(...)`
-
-## App Resume Ads
-
-If you want ads to show automatically when the app returns to foreground:
-
-```kotlin
-class MyApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-
-        AdmobManager.initAdmob(
-            context = this,
-            config = AdmobConfig(
-                requestTimeoutMillis = 10_000,
-                isTestAd = true,
-                isEnableAd = true,
-            )
-        )
-
-        AppOpenManager.enableResumeMode(
-            application = this,
-            adUnitId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-            minIntervalMillis = 10_000L
-        )
-    }
-}
-```
-
-## App Open Ads
-
-Use `AppOpenManager.showOnSlash(...)` when you want to show an app open ad explicitly, such as on splash.
-
-```kotlin
-AppOpenManager.showOnSlash(
-    activity = this,
-    adUnitId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    timeout = 10_000,
-    listener = object : AppOpenManager.AppOpenAdListener {
-        override fun onAdClose() {
-            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-            finish()
-        }
-
-        override fun onAdFail(error: AdErrorInfo) {
-            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-            finish()
-        }
-
-        override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {}
-    }
-)
-```
-
-## Banner Ads
-
-### Normal banner
+### Banner
 
 ```kotlin
 AdmobManager.loadAndShowBannerAd(
@@ -233,339 +117,93 @@ AdmobManager.loadAndShowBannerAd(
 )
 ```
 
-### Collapsible banner
+### Native (load trước, show sau)
 
 ```kotlin
-AdmobManager.loadAndShowBannerCollapsibleAd(
+AdmobManager.loadNativeAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", callback)
+AdmobManager.showNativeAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", binding.nativeContainer, renderer, showCallback)
+```
+
+### Interstitial
+
+```kotlin
+AdmobManager.loadInterstitialAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", loadCallback)
+AdmobManager.showInterstitialAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", showCallback)
+```
+
+### Reward
+
+```kotlin
+AdmobManager.loadAndShowRewardAd(this, "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy", rewardCallback)
+```
+
+### App Open (splash)
+
+```kotlin
+AppOpenManager.showOnSlash(
     activity = this,
-    idBannerCollapAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    isBottomCollapsible = true,
-    viewBanner = binding.bannerContainer,
-    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
+    adUnitId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    timeout = 10_000,
+    listener = object : AppOpenManager.AppOpenAdListener {
+        override fun onAdClose() {}
+        override fun onAdFail(error: AdErrorInfo) {}
+        override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {}
     }
 )
 ```
 
-## Native Ads
-
-Native ads use a `Renderer + ViewBinding` contract.
-
-The library is responsible for:
-
-1. loading native ads
-2. caching native ads internally
-3. showing loading placeholders
-4. lifecycle and callbacks
-
-The host app is responsible for:
-
-1. defining the native ad layout
-2. creating a `NativeAdRenderer`
-3. binding views with ViewBinding
-
-### 1. Load native ad first
+### App Resume
 
 ```kotlin
-AdmobManager.loadNativeAd(
-    context = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adCallBack = object : AdmobManager.LoadAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
+AppOpenManager.enableResumeMode(
+    application = this,
+    adUnitId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    minIntervalMillis = 10_000L
 )
 ```
 
-### 2. Create a renderer
+## Callback contracts
 
-```kotlin
-class MediumNativeAdRenderer : NativeAdRenderer<AdUnifiedMediumBinding> {
-    override val loadingStyle = NativeAdLoadingStyle.MEDIUM
+- `AdmobManager.LoadAdCallBack`: load ad (chưa show)
+- `AdmobManager.ShowAdCallBack`: show ad đã load
+- `AdmobManager.LoadAndShowAdCallBack`: load + show
+- `AdmobManager.ShowRewardAdCallBack`: show rewarded interstitial
+- `AdmobManager.LoadAndShowRewardAdCallBack`: load + show rewarded
 
-    override fun inflate(
-        layoutInflater: LayoutInflater,
-        parent: ViewGroup
-    ): AdUnifiedMediumBinding {
-        return AdUnifiedMediumBinding.inflate(layoutInflater, parent, false)
-    }
+## Danh sách lỗi trả về
 
-    override fun root(binding: AdUnifiedMediumBinding): NativeAdView = binding.root
+`AdErrorInfo` gồm:
 
-    override fun bind(binding: AdUnifiedMediumBinding, nativeAd: NativeAd) {
-        binding.root.mediaView = binding.adMedia
-        binding.root.headlineView = binding.adHeadline
-        binding.root.bodyView = binding.adBody
-        binding.root.callToActionView = binding.adCallToAction
-        binding.root.iconView = binding.adAppIcon
-        binding.root.starRatingView = binding.adStars
+- `code: AdErrorCode`
+- `message: String`
 
-        binding.adHeadline.text = nativeAd.headline
-        binding.adMedia.mediaContent = nativeAd.mediaContent
+`AdErrorCode` hiện có:
 
-        binding.adBody.apply {
-            text = nativeAd.body
-            visibility = if (nativeAd.body.isNullOrBlank()) View.INVISIBLE else View.VISIBLE
-        }
+- `CONSENT_REQUIRED`: chưa đủ consent để request/show ads
+- `CONSENT_FLOW_ERROR`: lỗi trong luồng consent UMP
+- `ADS_DISABLED`: tắt ads bằng config (`isEnableAd = false`)
+- `NO_INTERNET`: không có kết nối mạng
+- `BLANK_AD_UNIT_ID`: ad unit id rỗng
+- `TIMEOUT`: quá thời gian chờ load/show
+- `AD_NOT_READY`: show khi ad chưa được load
+- `ALREADY_LOADED`: ad đã có trong cache
+- `ALREADY_SHOWING`: đang có ad khác hiển thị
+- `NOT_INITIALIZED`: chưa init AdMob hợp lệ
+- `LOAD_FAILED`: SDK load ad thất bại
+- `SHOW_FAILED`: SDK show ad thất bại
+- `BACKGROUND_STATE`: app không ở foreground hợp lệ để show
+- `INVALID_STATE`: state không hợp lệ (ví dụ đang loading)
+- `UNKNOWN`: lỗi chưa phân loại
 
-        binding.adCallToAction.apply {
-            text = nativeAd.callToAction
-            visibility = if (nativeAd.callToAction.isNullOrBlank()) View.INVISIBLE else View.VISIBLE
-        }
+## Test mode và production mode
 
-        if (nativeAd.icon == null) {
-            binding.adAppIcon.visibility = View.GONE
-        } else {
-            binding.adAppIcon.setImageDrawable(nativeAd.icon!!.drawable)
-            binding.adAppIcon.visibility = View.VISIBLE
-        }
+Trong `AdmobConfig`:
 
-        if (nativeAd.starRating == null) {
-            binding.adStars.visibility = View.GONE
-        } else {
-            binding.adStars.rating = nativeAd.starRating!!.toFloat()
-            binding.adStars.visibility = View.VISIBLE
-        }
+- `isTestAd = true`: ưu tiên test ads
+- `isTestAd = false`: dùng ad unit thật từ server/config
 
-        binding.root.setNativeAd(nativeAd)
-    }
-}
-```
+## Gợi ý tích hợp chuẩn
 
-### 3. Show preloaded native ad
-
-```kotlin
-AdmobManager.showNativeAd(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    viewNativeAd = binding.nativeContainer,
-    renderer = MediumNativeAdRenderer(),
-    adCallBack = object : AdmobManager.ShowAdCallBack {
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-### 4. Load and show native ad directly
-
-```kotlin
-AdmobManager.loadAndShowNativeAd(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    viewNativeAd = binding.nativeContainer,
-    renderer = MediumNativeAdRenderer(),
-    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-### Fullscreen native ad
-
-Load:
-
-```kotlin
-AdmobManager.loadNativeAdFullScreen(
-    context = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    mediaAspectRatio = MediaAspectRatio.PORTRAIT,
-    adCallBack = object : AdmobManager.LoadAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-Show:
-
-```kotlin
-AdmobManager.showNativeAdFullScreen(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    viewNativeAd = binding.fullscreenNativeContainer,
-    renderer = FullscreenNativeAdRenderer(),
-    adCallBack = object : AdmobManager.ShowAdCallBack {
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-Or load and show directly:
-
-```kotlin
-AdmobManager.loadAndShowNativeAdFullScreen(
-    activity = this,
-    idNativeAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    viewNativeAd = binding.fullscreenNativeContainer,
-    renderer = FullscreenNativeAdRenderer(),
-    mediaAspectRatio = MediaAspectRatio.PORTRAIT,
-    adCallBack = object : AdmobManager.LoadAndShowAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-## Interstitial Ads
-
-### Load interstitial
-
-```kotlin
-AdmobManager.loadInterstitialAd(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adLoadCallback = object : AdmobManager.LoadAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-### Show interstitial
-
-```kotlin
-AdmobManager.showInterstitialAd(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adCallback = object : AdmobManager.ShowAdCallBack {
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-### Load and show interstitial directly
-
-```kotlin
-AdmobManager.loadAndShowInterstitialAd(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adCallback = object : AdmobManager.LoadAndShowAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-## Reward Ads
-
-### Load and show rewarded ad
-
-```kotlin
-AdmobManager.loadAndShowRewardAd(
-    activity = this,
-    idRewardAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adCallback = object : AdmobManager.LoadAndShowRewardAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdShowed() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClosed() {}
-        override fun onAdEarned() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-### Rewarded interstitial
-
-```kotlin
-AdmobManager.loadInterReward(
-    context = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adCallBack = object : AdmobManager.LoadAdCallBack {
-        override fun onAdLoaded() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdClicked() {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-
-AdmobManager.showInterReward(
-    activity = this,
-    idAd = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    adCallback = object : AdmobManager.ShowRewardAdCallBack {
-        override fun onAdShowed() {}
-        override fun onAdClosed() {}
-        override fun onAdEarned() {}
-        override fun onAdFailed(error: AdErrorInfo) {}
-        override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {}
-    }
-)
-```
-
-## Revenue Tracking
-
-All major ad callbacks expose:
-
-```kotlin
-override fun onAdPaid(adValue: AdValue, adUnit: String, mediationNetwork: String) {
-}
-```
-
-Use this callback to:
-
-1. log revenue
-2. forward data to analytics
-3. post ad revenue to MMPs
-
-## Native API Summary
-
-Native ads no longer use:
-
-1. holder objects in the public API
-2. `layoutNativeFormat: Int`
-3. `isNativeMedium: Boolean`
-4. hardcoded `findViewById(...)` contracts inside the public integration surface
-
-Native ads now use:
-
-1. `idAd: String`
-2. `NativeAdRenderer<T : ViewBinding>`
-3. host-owned layout and binding logic
-4. library-owned internal cache and lifecycle logic
-
-## Sample App
-
-The `app` module contains working examples for:
-
-1. banner ads
-2. native ads with custom renderers
-3. interstitial ads
-4. rewarded ads
-5. app open ads
-6. app resume ads
-7. consent flow
-
-Use it as the reference implementation for this phase.
+- Init trong `Application` một lần.
+- Dùng callback `onAdFailed` để gom log/analytics theo `AdErrorCode`.
+- Không gọi consent thủ công ở app; để library tự quản lý.

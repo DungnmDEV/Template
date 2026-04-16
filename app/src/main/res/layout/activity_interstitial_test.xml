@@ -1,59 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    tools:context=".MainActivity">
+    android:padding="16dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ad Test Screens"
-        android:textSize="24sp"
+        android:text="Interstitial Test"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/tv_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="Mỗi màn tập trung test một loại ad riêng"
-        android:textColor="#666666" />
+        android:layout_marginTop="8dp"
+        android:text="Status: idle" />
 
     <Button
-        android:id="@+id/btn_banner_test"
+        android:id="@+id/btn_load_interstitial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Banner Test" />
+        android:layout_marginTop="16dp"
+        android:text="Load Interstitial" />
 
     <Button
-        android:id="@+id/btn_native_test"
+        android:id="@+id/btn_show_interstitial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Native Test" />
+        android:text="Show Interstitial" />
 
     <Button
-        android:id="@+id/btn_interstitial_test"
+        android:id="@+id/btn_load_show_interstitial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Interstitial Test" />
+        android:text="Load And Show Interstitial" />
 
     <Button
-        android:id="@+id/btn_reward_test"
+        android:id="@+id/btn_load_show_interstitial_no_loading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Reward Test" />
-
-    <Button
-        android:id="@+id/btn_app_open_test"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="App Open Test" />
+        android:text="Load And Show Interstitial (No Loading)" />
 
 </LinearLayout>
