@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MediaAspectRatio
 import com.percas.studio.template.admob.AdmobManager
-import com.percas.studio.template.admob.AppOpenAdsManager
+import com.percas.studio.template.admob.AppOpenManager
 import com.percas.studio.template.cmp.CMP_Manager
 
 @SuppressLint("CustomSplashScreen")
@@ -31,8 +31,8 @@ class SplashActivity : AppCompatActivity() {
         }
 
         val appOpenID = "ca-app-pub-3940256099942544/3419835294"
-        val appOpenAdsManager = AppOpenAdsManager(this,appOpenID,
-            timeOut = 10000, object : AppOpenAdsManager.AppOpenAdListener {
+        AppOpenManager.showOnSlash(this, appOpenID,
+            timeout = 10000, listener = object : AppOpenManager.AppOpenAdListener {
             override fun onAdClose() {
                 startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                 finish()
@@ -46,8 +46,6 @@ class SplashActivity : AppCompatActivity() {
             override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {
             }
         })
-        
-        appOpenAdsManager.loadAndShowAoA()
     }
     private fun loadNativeAd(context: Context, idAd: String){
         AdmobManager.loadNativeAd(context, idAd, object : AdmobManager.LoadAdCallBack{

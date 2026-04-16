@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.viewbinding.ViewBinding
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdValue
@@ -142,7 +143,6 @@ internal object NativeAdManager {
         }
 
         val state = nativeAds.getOrPut(resolvedId) { NativeAdState() }
-        AdmobCore.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
 
         if (!state.isLoading) {
@@ -159,7 +159,7 @@ internal object NativeAdManager {
             return
         }
 
-        observeLoadingNativeAd(activity, viewNativeAd, renderer, state, tag, adCallBack)
+        observeLoadingNativeAd(activity, viewNativeAd, renderer, state, resolvedId, tag, adCallBack)
     }
 
     fun <T : ViewBinding> loadAndShowNativeAd(
@@ -191,11 +191,8 @@ internal object NativeAdManager {
         viewNativeAd.removeAllViews()
         val tagView = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(tagView, 0)
-
-        if (AdmobCore.shimmerFrameLayout == null) {
-            AdmobCore.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
-        }
-        AdmobCore.shimmerFrameLayout?.startShimmer()
+        val shimmerFrameLayout = tagView.findViewById<ShimmerFrameLayout>(R.id.shimmer_view_container)
+        shimmerFrameLayout?.startShimmer()
 
         val adLoader = AdLoader.Builder(activity, resolvedId)
             .forNativeAd { nativeAd ->
@@ -214,7 +211,7 @@ internal object NativeAdManager {
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    AdmobCore.shimmerFrameLayout?.stopShimmer()
+                    shimmerFrameLayout?.stopShimmer()
                     viewNativeAd.removeAllViews()
                     adCallBack.onAdFailed(adError.message + "\nError Code Ads:\n" + adError.cause)
                     Log.e(tag, adError.message + "\nError Code Ads:\n" + adError.cause)
@@ -267,8 +264,8 @@ internal object NativeAdManager {
         viewNativeAd.removeAllViews()
         val tagView = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(tagView, 0)
-        AdmobCore.shimmerFrameLayout = tagView.findViewById(R.id.shimmer_view_container)
-        AdmobCore.shimmerFrameLayout?.startShimmer()
+        val shimmerFrameLayout = tagView.findViewById<ShimmerFrameLayout>(R.id.shimmer_view_container)
+        shimmerFrameLayout?.startShimmer()
 
         val builder = AdLoader.Builder(activity, resolvedId)
         val videoOptions =
@@ -296,7 +293,7 @@ internal object NativeAdManager {
         }
         builder.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                AdmobCore.shimmerFrameLayout?.stopShimmer()
+                shimmerFrameLayout?.stopShimmer()
                 adCallBack.onAdFailed(loadAdError.message + "\nCause\n" + loadAdError.cause)
                 Log.e(tag, loadAdError.message + "\nCause\n" + loadAdError.cause)
             }
@@ -421,7 +418,6 @@ internal object NativeAdManager {
         }
 
         val state = fullscreenNativeAds.getOrPut(resolvedId) { NativeAdState() }
-        AdmobCore.shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
 
         if (!state.isLoading) {
@@ -438,7 +434,7 @@ internal object NativeAdManager {
             return
         }
 
-        observeLoadingNativeAd(activity, viewNativeAd, renderer, state, tag, adCallBack)
+        observeLoadingNativeAd(activity, viewNativeAd, renderer, state, resolvedId, tag, adCallBack)
     }
 
     private fun <T : ViewBinding> observeLoadingNativeAd(
@@ -446,32 +442,29 @@ internal object NativeAdManager {
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>,
         state: NativeAdState,
+        resolvedId: String,
         tag: String,
         adCallBack: AdmobManager.ShowAdCallBack
     ) {
         val overlayLoading = createNativeLoadingView(activity, renderer.loadingStyle)
         viewNativeAd.addView(overlayLoading, 0)
-
-        if (AdmobCore.shimmerFrameLayout == null) {
-            AdmobCore.shimmerFrameLayout = overlayLoading.findViewById(R.id.shimmer_view_container)
-        }
-
-        AdmobCore.shimmerFrameLayout?.startShimmer()
+        val shimmerFrameLayout = overlayLoading.findViewById<ShimmerFrameLayout>(R.id.shimmer_view_container)
+        shimmerFrameLayout?.startShimmer()
         state.liveData.observe(activity as LifecycleOwner) { nativeAd: NativeAd? ->
             if (nativeAd != null) {
                 nativeAd.setOnPaidEventListener {
                     adCallBack.onAdPaid(
                         it,
-                        nativeAd.responseInfo?.loadedAdapterResponseInfo?.adSourceName ?: "NativeAd",
+                        resolvedId,
                         nativeAd.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
-                renderNativeAd(activity, viewNativeAd, renderer, nativeAd)
+                renderNativeAd(activity, viewNativeAd, renderer, nativeAd, shimmerFrameLayout)
                 adCallBack.onAdShowed()
                 Log.d(tag, "Ad Showed")
                 state.liveData.removeObservers(activity as LifecycleOwner)
             } else {
-                AdmobCore.shimmerFrameLayout?.stopShimmer()
+                shimmerFrameLayout?.stopShimmer()
                 adCallBack.onAdFailed("Load native Ad before show it or use LoadAndShowNativeAd")
                 Log.e(tag, "Load native Ad before show it or use LoadAndShowNativeAd!")
                 state.liveData.removeObservers(activity as LifecycleOwner)
@@ -483,12 +476,13 @@ internal object NativeAdManager {
         activity: Activity,
         viewNativeAd: ViewGroup,
         renderer: NativeAdRenderer<T>,
-        nativeAd: NativeAd
+        nativeAd: NativeAd,
+        shimmerFrameLayout: ShimmerFrameLayout? = null
     ) {
         val binding = renderer.inflate(activity.layoutInflater, viewNativeAd)
         renderer.bind(binding, nativeAd)
         val adView = renderer.root(binding)
-        AdmobCore.shimmerFrameLayout?.stopShimmer()
+        shimmerFrameLayout?.stopShimmer()
         viewNativeAd.removeAllViews()
         viewNativeAd.addView(adView)
     }

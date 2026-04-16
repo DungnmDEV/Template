@@ -168,26 +168,25 @@ class MyApplication : Application() {
 
         AdmobManager.initAdmob(this, 10_000, true, true)
 
-        AppResumeAdsManager.getInstance().init(
+        AppOpenManager.enableResumeMode(
             application = this,
-            appOnresmeAdsId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy"
+            adUnitId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+            minIntervalMillis = 10_000L
         )
-
-        AppResumeAdsManager.getInstance().timeWaitToShow = 10_000L
     }
 }
 ```
 
 ## App Open Ads
 
-Use `AppOpenAdsManager` when you want to show an app open ad explicitly, such as on splash.
+Use `AppOpenManager.showOnSlash(...)` when you want to show an app open ad explicitly, such as on splash.
 
 ```kotlin
-val appOpenAdsManager = AppOpenAdsManager(
+AppOpenManager.showOnSlash(
     activity = this,
-    appOpenID = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
-    timeOut = 10_000,
-    appOpenAdsListener = object : AppOpenAdsManager.AppOpenAdListener {
+    adUnitId = "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy",
+    timeout = 10_000,
+    listener = object : AppOpenManager.AppOpenAdListener {
         override fun onAdClose() {
             startActivity(Intent(this@SplashActivity, MainActivity::class.java))
             finish()
@@ -201,8 +200,6 @@ val appOpenAdsManager = AppOpenAdsManager(
         override fun onAdPaid(adValue: AdValue, adUnitAds: String, mediationNetwork: String) {}
     }
 )
-
-appOpenAdsManager.loadAndShowAoA()
 ```
 
 ## Banner Ads

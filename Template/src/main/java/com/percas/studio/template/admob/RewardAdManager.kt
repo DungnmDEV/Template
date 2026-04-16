@@ -1,11 +1,19 @@
 package com.percas.studio.template.admob
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.Window
+import android.widget.LinearLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -51,7 +59,7 @@ internal object RewardAdManager {
             return
         }
 
-        AdmobCore.dialogLoading(activity)
+        val loadingDialog = createLoadingDialog(activity)
         AdmobCore.isOverlayAdShowing = true
         disableResumeAdsIfNeeded()
 
@@ -59,7 +67,7 @@ internal object RewardAdManager {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                 adCallback.onAdFailed(loadAdError.message + "\nCause:\n" + loadAdError.cause)
                 Log.e(tag, loadAdError.message + "\nCause:\n" + loadAdError.cause)
-                AdmobCore.dismissAdDialog()
+                dismissDialog(loadingDialog)
                 enableResumeAdsIfNeeded()
                 AdmobCore.isOverlayAdShowing = false
             }
@@ -87,7 +95,7 @@ internal object RewardAdManager {
                         AdmobCore.isOverlayAdShowing = false
                         adCallback.onAdFailed(adError.message + "\nCause:n\n" + adError.cause)
                         Log.e(tag, adError.message + "\nCause:n\n" + adError.cause)
-                        AdmobCore.dismissAdDialog()
+                        dismissDialog(loadingDialog)
                         enableResumeAdsIfNeeded()
                     }
 
@@ -95,7 +103,7 @@ internal object RewardAdManager {
                         AdmobCore.isOverlayAdShowing = false
                         adCallback.onAdClosed()
                         Log.d(tag, "onAdClosed")
-                        AdmobCore.dismissAdDialog()
+                        dismissDialog(loadingDialog)
                         enableResumeAdsIfNeeded()
                     }
                 }
@@ -105,11 +113,11 @@ internal object RewardAdManager {
                     rewardedAd.show(activity) {
                         adCallback.onAdEarned()
                         Log.d(tag, "onAdEarned")
-                        AdmobCore.dismissAdDialog()
+                        dismissDialog(loadingDialog)
                     }
                     AdmobCore.isOverlayAdShowing = true
                 } else {
-                    AdmobCore.dismissAdDialog()
+                    dismissDialog(loadingDialog)
                     AdmobCore.isOverlayAdShowing = false
                     enableResumeAdsIfNeeded()
                     adCallback.onAdFailed("Your App is showing on resume ad!")
@@ -207,13 +215,26 @@ internal object RewardAdManager {
             return
         }
         val rewardState = InternalAdCache.rewardedInterstitial(resolvedId)
+        val handler = Handler(Looper.getMainLooper())
 
         AdmobCore.isOverlayAdShowing = true
-        AdmobCore.dialogLoading(activity)
+        val loadingDialog = createLoadingDialog(activity)
 
         if (rewardState.isLoading) {
+            val timeoutRunnable = Runnable {
+                if (rewardState.isLoading) {
+                    rewardState.liveData.removeObservers(activity as LifecycleOwner)
+                    enableResumeAdsIfNeeded()
+                    AdmobCore.isOverlayAdShowing = false
+                    dismissDialog(loadingDialog)
+                    adCallback.onAdFailed("Time out!")
+                }
+            }
+            handler.postDelayed(timeoutRunnable, AdmobCore.getTimeout().toLong())
+
             rewardState.liveData.observe(activity as LifecycleOwner) { reward: RewardedInterstitialAd? ->
                 reward?.let {
+                    handler.removeCallbacks(timeoutRunnable)
                     rewardState.liveData.removeObservers(activity)
                     it.setOnPaidEventListener { value ->
                         adCallback.onAdPaid(
@@ -224,30 +245,34 @@ internal object RewardAdManager {
                     }
                     reward.fullScreenContentCallback = object : FullScreenContentCallback() {
                         override fun onAdDismissedFullScreenContent() {
+                            handler.removeCallbacks(timeoutRunnable)
                             InternalAdCache.clearRewardedInterstitial(resolvedId)
                             rewardState.liveData.removeObservers(activity)
                             enableResumeAdsIfNeeded()
                             AdmobCore.isOverlayAdShowing = false
-                            AdmobCore.dismissAdDialog()
+                            dismissDialog(loadingDialog)
                             adCallback.onAdClosed()
                         }
 
                         override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                            handler.removeCallbacks(timeoutRunnable)
                             InternalAdCache.clearRewardedInterstitial(resolvedId)
                             rewardState.liveData.removeObservers(activity)
                             enableResumeAdsIfNeeded()
                             AdmobCore.isOverlayAdShowing = false
-                            AdmobCore.dismissAdDialog()
+                            dismissDialog(loadingDialog)
                             adCallback.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
                         }
 
                         override fun onAdShowedFullScreenContent() {
+                            handler.removeCallbacks(timeoutRunnable)
                             AdmobCore.isOverlayAdShowing = true
                             adCallback.onAdShowed()
-                            AdmobCore.dismissAdDialog()
+                            dismissDialog(loadingDialog)
                         }
                     }
                     it.show(activity) {
+                        handler.removeCallbacks(timeoutRunnable)
                         adCallback.onAdEarned()
                     }
                 }
@@ -267,7 +292,7 @@ internal object RewardAdManager {
                         rewardState.liveData.removeObservers(activity as LifecycleOwner)
                         enableResumeAdsIfNeeded()
                         AdmobCore.isOverlayAdShowing = false
-                        AdmobCore.dismissAdDialog()
+                        dismissDialog(loadingDialog)
                         adCallback.onAdClosed()
                     }
 
@@ -276,21 +301,21 @@ internal object RewardAdManager {
                         rewardState.liveData.removeObservers(activity as LifecycleOwner)
                         enableResumeAdsIfNeeded()
                         AdmobCore.isOverlayAdShowing = false
-                        AdmobCore.dismissAdDialog()
+                        dismissDialog(loadingDialog)
                         adCallback.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
                     }
 
                     override fun onAdShowedFullScreenContent() {
                         AdmobCore.isOverlayAdShowing = true
                         adCallback.onAdShowed()
-                        AdmobCore.dismissAdDialog()
+                        dismissDialog(loadingDialog)
                     }
                 }
                 rewardState.ad?.show(activity) { adCallback.onAdEarned() }
             } else {
                 AdmobCore.isOverlayAdShowing = false
                 adCallback.onAdFailed("Ad is null. Load Inter Reward before show it!")
-                AdmobCore.dismissAdDialog()
+                dismissDialog(loadingDialog)
                 enableResumeAdsIfNeeded()
             }
         }
@@ -314,17 +339,46 @@ internal object RewardAdManager {
         return adId.takeIf { it.isNotBlank() }
     }
 
+    private fun createLoadingDialog(activity: Activity): Dialog {
+        val dialog = Dialog(activity)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_full_screen)
+        dialog.setCancelable(false)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setLayout(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        )
+        dialog.findViewById<LottieAnimationView>(R.id.imageView3)?.setAnimation(R.raw.gifloading)
+        try {
+            if (!activity.isFinishing && !dialog.isShowing) {
+                dialog.show()
+            }
+        } catch (_: Exception) {
+        }
+        return dialog
+    }
+
+    private fun dismissDialog(dialog: Dialog?) {
+        try {
+            if (dialog?.isShowing == true) {
+                dialog.dismiss()
+            }
+        } catch (_: Exception) {
+        }
+    }
+
     private fun Context.isNetworkConnected(): Boolean = AdmobCore.run { isNetworkConnected() }
 
     private fun disableResumeAdsIfNeeded() {
-        if (AppResumeAdsManager.getInstance().isInitialized) {
-            AppResumeAdsManager.getInstance().isAppResumeEnabled = false
+        if (AppOpenManager.isResumeModeInitialized()) {
+            AppOpenManager.setResumeModeEnabled(false)
         }
     }
 
     private fun enableResumeAdsIfNeeded() {
-        if (AppResumeAdsManager.getInstance().isInitialized) {
-            AppResumeAdsManager.getInstance().isAppResumeEnabled = true
+        if (AppOpenManager.isResumeModeInitialized()) {
+            AppOpenManager.setResumeModeEnabled(true)
         }
     }
 }

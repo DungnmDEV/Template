@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.ViewGroup
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -55,8 +56,8 @@ internal object BannerAdManager {
         viewBannerAd.addView(overlayView, 0)
         viewBannerAd.addView(adView, 1)
 
-        AdmobCore.shimmerFrameLayout = overlayView.findViewById(R.id.shimmerBanner)
-        AdmobCore.shimmerFrameLayout?.startShimmer()
+        val shimmerFrameLayout = overlayView.findViewById<ShimmerFrameLayout>(R.id.shimmerBanner)
+        shimmerFrameLayout?.startShimmer()
 
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
@@ -67,7 +68,7 @@ internal object BannerAdManager {
                         adView.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
-                AdmobCore.shimmerFrameLayout?.stopShimmer()
+                shimmerFrameLayout?.stopShimmer()
                 viewBannerAd.removeView(overlayView)
                 adCallBack.onAdLoaded()
                 adCallBack.onAdShowed()
@@ -75,7 +76,7 @@ internal object BannerAdManager {
             }
 
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                AdmobCore.shimmerFrameLayout?.stopShimmer()
+                shimmerFrameLayout?.stopShimmer()
                 viewBannerAd.removeView(overlayView)
                 adCallBack.onAdFailed(adError.message + "\nCause:\n" + adError.cause)
                 Log.e(tag, adError.message + "\nCause:\n" + adError.cause)
@@ -137,8 +138,8 @@ internal object BannerAdManager {
         viewBanner.addView(overlayView, 0)
         viewBanner.addView(adView, 1)
 
-        AdmobCore.shimmerFrameLayout = overlayView.findViewById(R.id.shimmer_view_container)
-        AdmobCore.shimmerFrameLayout?.startShimmer()
+        val shimmerFrameLayout = overlayView.findViewById<ShimmerFrameLayout>(R.id.shimmer_view_container)
+        shimmerFrameLayout?.startShimmer()
 
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
@@ -149,10 +150,11 @@ internal object BannerAdManager {
                         adView.responseInfo?.mediationAdapterClassName ?: "GoogleAdmob"
                     )
                 }
-                AdmobCore.shimmerFrameLayout?.stopShimmer()
+                shimmerFrameLayout?.stopShimmer()
                 viewBanner.removeView(overlayView)
                 overlayView.destroyDrawingCache()
                 adCallBack.onAdLoaded()
+                adCallBack.onAdShowed()
                 Log.d(tag, "onAdLoaded")
 
                 val params: ViewGroup.LayoutParams = viewBanner.layoutParams
@@ -161,7 +163,7 @@ internal object BannerAdManager {
             }
 
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                AdmobCore.shimmerFrameLayout?.stopShimmer()
+                shimmerFrameLayout?.stopShimmer()
                 viewBanner.removeView(overlayView)
                 adCallBack.onAdFailed(adError.message + "\nCause\n" + adError.cause)
                 Log.e(tag, "onAdFailedToLoad: " + adError.message + "\nCause\n" + adError.cause)

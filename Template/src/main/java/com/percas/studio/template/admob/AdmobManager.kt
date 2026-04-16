@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.viewbinding.ViewBinding
-import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MobileAds
@@ -43,12 +42,6 @@ object AdmobManager {
         get() = AdmobCore.isTestAd
         set(value) {
             AdmobCore.isTestAd = value
-        }
-
-    var shimmerFrameLayout
-        get() = AdmobCore.shimmerFrameLayout
-        set(value) {
-            AdmobCore.shimmerFrameLayout = value
         }
 
     @JvmStatic
@@ -218,14 +211,6 @@ object AdmobManager {
         adCallback: LoadAndShowAdCallBack
     ) {
         InterstitialAdManager.loadAndShowInterstitialAdWithoutLoadingScreen(activity, idAd, adCallback)
-    }
-
-    fun dismissAdDialog() {
-        AdmobCore.dismissAdDialog()
-    }
-
-    internal fun dialogLoading(context: Activity) {
-        AdmobCore.dialogLoading(context)
     }
 
     fun loadAndShowRewardAd(
